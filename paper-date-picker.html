@@ -14,7 +14,6 @@
 <link rel="import" href="../moment-element/moment-with-locales-import.html">
 <link rel="import" href="paper-calendar.html">
 <link rel="import" href="paper-date-picker-dialog-style.html">
-<link rel="import" href="paper-year-list.html">
 
 <!--
 Material Design [Pickers](http://www.google.com/design/spec/components/pickers.html)
@@ -81,6 +80,7 @@ styling:
         height: 248px;
         @apply(--layout-horizontal);
       }
+
       #heading {
         width: 168px;
         @apply(--paper-date-picker-heading);
@@ -92,6 +92,7 @@ styling:
         height: 428px;
         @apply(--layout-vertical);
       }
+
       :host([narrow]) #heading {
         width: auto;
         height: 96px;
@@ -100,74 +101,119 @@ styling:
 
       /** Heading ********************/
       #heading {
-        padding: 16px;
+        background: var(--default-primary-color);
         box-sizing: border-box;
         color: var(--text-primary-color);
-        background: var(--default-primary-color);
+        padding: 16px;
         @apply(--layout-vertical);
         @apply(--layout-around-justfied);
       }
-      #heading .date,
-      #heading .year {
+
+     #sub-heading {
+       @apply(--layout-horizontal);
+       @apply(--layout-around-justfied);
+       @apply(--layout-center);
+       padding-bottom: 3em;
+     }
+
+     @media screen and (min-width: 728px) {
+       #sub-heading {
+         @apply(--layout-vertical);
+         height: 20em;
+       }
+
+       iron-icon {
+         @apply(--layout-flex-2);
+       }
+     }
+
+     .date-heading {
+       @apply(--layout-flex-2);
+       @apply(--layout-vertical);
+       @apply(--layout-around-justfied);
+     }
+
+     iron-icon {
+       --iron-icon: {
+         @apply(--layout-flex);
+         stroke-width: 10;
+       }
+     }
+
+     .date, .day {
         cursor: pointer;
       }
-      #heading .date {
-        @apply(--paper-font-display1);
+
+      .date {
+        @apply(--paper-font-headline);
         font-weight: bold;
         margin-top: 2px;
         @apply(--paper-date-picker-heading-date);
       }
-      #heading div.date {
+
+      div.date {
         letter-spacing: 0.025em;
       }
-      #heading .date span {
+
+      .date span {
         white-space: nowrap;
       }
-      #heading .year {
+
+      .day {
         @apply(--paper-font-body2);
         font-size: 16px;
         @apply(--paper-date-picker-heading-date);
       }
-      #heading:not(.pg-chooseYear) .year,
-      #heading.pg-chooseYear .date {
-        color: var(--light-primary-color);
-      }
 
-      /** Calendar/Year picker ********/
-      :host([isTouch]) paper-year-list::-webkit-scrollbar {
-        width: 0 !important;
-      }
+      /** Calendar picker ********/
+
       #pages {
         @apply(--layout-flex);
         width: auto;
         background: var(--default-background-color);
       }
-      #calendar {
-        --paper-calendar: {
-          @apply(--paper-date-picker-calendar);
-        }
-      }
+
+     #calendar {
+       --paper-calendar: {
+         @apply(--paper-date-picker-calendar);
+       }
+     }
     </style>
     <iron-media-query query="{{_getMediaQuery(forceNarrow, responsiveWidth)}}" query-matches="{{_queryMatches}}"></iron-media-query>
     <div id="datePicker">
-      <div id="heading" class$="{{_getHeadingClass('heading-content', _selectedPage)}}">
-        <div class="year" on-tap="_tapHeadingYear">{{dateFormat(date, 'YYYY', locale)}}</div>
-        <div class="date" on-tap="_tapHeadingDate">
-          <template is="dom-repeat" items="{{_splitHeadingDate(date, headingFormat, locale)}}">
-            <span>{{item}}</span>
-          </template>
+
+      <div id="heading" class="flex">
+
+        <div id="sub-heading">
+          <div class="date-heading">
+            <div class="day" data-date="[[startDate]]" on-tap="_tapHeadingDate">{{dateFormat(startDate, 'dddd', locale)}}</div>
+            <div class="date" on-tap="_tapHeadingDate">
+              <template is="dom-repeat" items="{{_splitHeadingDate(startDate, headingFormat, locale)}}">
+                <!-- HACK: added data-date here for passing to fn, see other spots too -->
+                <span data-date="[[startDate]]">{{item}}</span>
+              </template>
+            </div>
+          </div>
+          <iron-icon icon="date-picker:arrow-forward"></iron-icon>
+          <div class="date-heading">
+            <div class="day" data-date="[[endDate]]" on-tap="_tapHeadingDate">{{dateFormat(endDate, 'dddd', locale)}}</div>
+            <div class="date" on-tap="_tapHeadingDate">
+              <template is="dom-repeat" items="{{_splitHeadingDate(endDate, headingFormat, locale)}}">
+                <span data-date="[[endDate]]">{{item}}</span>
+              </template>
+            </div>
+          </div>
         </div>
       </div>
+
       <neon-animated-pages id="pages" selected="{{_selectedPage}}" attr-for-selected="id"
-        entry-animation="fade-in-animation" exit-animation="fade-out-animation"
-        on-iron-select="_pageSelected">
+                           entry-animation="fade-in-animation" exit-animation="fade-out-animation"
+                           on-iron-select="_pageSelected">
         <neon-animatable id="chooseDate">
-          <paper-calendar id="calendar" locale="{{locale}}" date="{{date}}"
-            min-date="{{minDate}}" max-date="{{maxDate}}">
+          <paper-calendar id="calendar" locale="{{locale}}"
+                          date="{{startDate}}" end-date="{{endDate}}"
+                          min-date="{{minDate}}" max-date="{{maxDate}}">
           </paper-calendar>
-        </neon-animatable>
-        <neon-animatable id="chooseYear">
-          <paper-year-list id="yearList" date="{{date}}" on-tap="_tapHeadingDate" min="[[_minYear]]" max="[[_maxYear]]"></paper-year-list>
         </neon-animatable>
       </neon-animated-pages>
     </div>
@@ -180,10 +226,17 @@ styling:
         /**
          * The selected date (YYYY-MM-DD)
          */
-        date: {
+        startDate: {
           type: Date,
           notify: true
         },
+
+        endDate: {
+          type: Date,
+          notify: true
+        },
+
+
         /**
          * Maximum screen width at which the picker uses a vertical layout
          */
@@ -204,7 +257,7 @@ styling:
          */
         headingFormat: {
           type: String,
-          value: 'ddd, MMM D'
+          value: 'MMM D'
         },
         /**
          * The minimum allowed date
@@ -247,58 +300,41 @@ styling:
           type: String,
           value: '[,]'
         },
-        _selectedPage: String,
-        _maxYear: {
-          type: Number,
-          computed: '_getFullYear(maxDate)'
-        },
-        _minYear: {
-          type: Number,
-          computed: '_getFullYear(minDate)'
-        }
       },
+
       behaviors: [
         Polymer.IronResizableBehavior
       ],
+
       listeners: {
         'iron-resize': '_resizeHandler'
       },
+
       ready: function() {
         this.today = this.$.calendar.today;
         this.isTouch = 'ontouchstart' in window;
         this._selectPage('chooseDate');
       },
+
       dateFormat: function() {
         return this.$.calendar.dateFormat.apply(this.$.calendar, arguments);
       },
-      _tapHeadingDate: function() {
-        if (this.$.pages.selected !== 'chooseDate') {
-          this._selectPage('chooseDate');
-        } else {
-          // tapping the date header while already viewing months brings you back
-          // to the selected month
-          this.$.calendar.currentMonth = this.date.getMonth() + 1;
-          this.$.calendar.currentYear = this.date.getFullYear();
-        }
+
+      _tapHeadingDate: function(e) {
+        var date = e.target.dataDate;
+        // tapping the date header while already viewing months brings you back
+        // to the selected month
+        this.$.calendar.currentMonth = date.getMonth() + 1;
       },
-      _tapHeadingYear: function() {
-        if (this.$.pages.selected !== 'chooseYear') {
-          this._selectPage('chooseYear');
-          this.$.yearList.centerSelected();
-        }
-      },
+
       _selectPage: function(page) {
         this.$.pages.selected = page;
       },
+
       _getMediaQuery: function(forceNarrow, responsiveWidth) {
         return '(max-width: ' + (forceNarrow ? '' : responsiveWidth) + ')';
       },
-      _getHeadingClass: function(pfx, selectedPage) {
-        return pfx + ' pg-' + selectedPage;
-      },
-      _getFullYear: function(date) {
-        return date ? date.getFullYear() : null;
-      },
+
       _splitHeadingDate: function(date, format, locale) {
         var re = new RegExp(this.headingBreak, 'g');
         var text = this.dateFormat(date, format, locale);
@@ -313,12 +349,15 @@ styling:
         }
         return value;
       },
+
       _computeNarrow: function(queryMatches, forceNarrow) {
         return queryMatches || forceNarrow;
       },
+
       _pageSelected: function() {
         this._resizeHandler();
       },
+
       _resizeHandler: function() {
         if (this._resizing) {
           return;

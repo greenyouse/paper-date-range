@@ -1,4 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-ripple/paper-ripple.html">
@@ -83,6 +84,31 @@
         @apply(--layout-flex);
       }
 
+     .between:first-of-type {
+       margin-left: -10px;
+     }
+
+     .between:last-of-type {
+       margin-right: -10px;
+     }
+
+     .between {
+       background: var(--light-primary-color);
+       height: 90%;
+     }
+
+     .day-item:not(.selected):hover {
+       background-color: var(--accent-color);
+     }
+
+     .day-item[disabled]:hover {
+       background-color: #fff;
+     }
+
+     .day-item .day:empty {
+       background-color: white; !important
+     }
+
       .month-nav {
         position: absolute;
         top: 0;
@@ -92,14 +118,17 @@
         @apply(--layout-horizontal);
         @apply(--layout-center);
       }
+
       .month-nav .col {
         position: relative;
         @apply(--layout-vertical);
         @apply(--layout-center-center);
       }
+
       .month-nav .btn .icon {
         cursor: pointer;
       }
+
       .month-nav .btn .ripple {
         position: absolute;
         width: 48px;
@@ -108,9 +137,11 @@
         left: 50%;
         transform: translate(-50%, -50%);
       }
+
       .month-nav .btn.right {
         text-align: right;
       }
+
       .month-name {
         line-height: 24px;
         vertical-align: middle;
@@ -122,17 +153,20 @@
         @apply(--layout-center-justified);
         @apply(--layout-flex);
       }
+
       .month-weekdays {
         color: var(--secondary-text-color);
         @apply(--layout-horizontal);
         @apply(--layout-justified);
         @apply(--layout-flex);
       }
+
       .month-days {
         @apply(--layout-horizontal);
         @apply(--layout-justified);
         @apply(--layout-flex);
       }
+
       .month-col .day {
         cursor: default;
         pointer-events: none;
@@ -140,41 +174,62 @@
         @apply(--layout-vertical);
         @apply(--layout-center-center);
       }
+
       .month-col {
         position: relative;
         width: 100%;
         height: 100%;
         @apply(--layout-center-center);
       }
+
       .day-item {
-        border-radius: 100%;
         width: 100%;
         height: 100%;
       }
+
       .day-item::selection {
         background: none;
       }
+
       .day-item.selected {
         background: var(--default-primary-color);
+        /* height: 2.5em;
+           width: 2.5em; */
       }
+
       .day-item.selected .day {
         color: var(--text-primary-color);
       }
+
       .day-item:not([disabled]) {
         cursor: pointer;
       }
+
+     .day-item[disabled]:focus {
+       outline: none;
+     }
+
+     .day-item:not([disabled]):focus {
+       outline: 2px solid var(--accent-color);
+       z-index: 1;
+     }
+
       .day-item[disabled] .day {
         color: var(--text-disabled-color, #9d9d9d);
       }
+
       .day-item.today .day {
         color: var(--default-primary-color);
       }
+
       .day-item.selected.today .day {
         color: var(--text-primary-color);
       }
+
       .flex {
         @apply(--layout-flex);
       }
+
       .flex-5 {
         @apply(--layout-flex-5);
       }
@@ -197,9 +252,10 @@
               <div class="month-row month-days">
                 <template is="dom-repeat" items="{{row}}">
                   <div class="month-col">
-                    <div class$="{{_getDayClass('day-item selection', item.date, today, date)}}"
+                    <div class$="{{_getDayClass('day-item selection', item.date, today, date, endDate)}}"
                       disabled$="{{_isDisabled(item.day, item.date, minDate, maxDate)}}"
-                      on-tap="_tapDay" date$="{{item.name}}">
+                      on-tap="_tapDay" date$="{{item.name}}"
+                      tabindex$="{{_getTabIndex(0, item.date, date, endDate, minDate, maxDate)}}">
                       <div class="day">{{item.day}}</div>
                     </div>
                   </div>
@@ -244,6 +300,8 @@
     var PRELOAD_MONTHS = 1;
 
     function dateDiff(a, b) {
+      if (a === null || b === null)
+        return;
       a = new Date(a.getTime());
       b = new Date(b.getTime());
       a.setHours(0, 0, 0, 0);
@@ -253,6 +311,12 @@
 
     Polymer({
       is: 'paper-calendar',
+
+      behaviors: [
+        Polymer.IronA11yKeysBehavior,
+        Polymer.IronResizableBehavior
+      ],
+
       properties: {
         /*
          * The selected date
@@ -265,6 +329,15 @@
           },
           observer: '_dateChanged'
         },
+
+        endDate: {
+          type: Date,
+          notify: true,
+          value: function() {
+            return moment().add(7, 'days').toDate();
+          }
+        },
+
         /**
          * The current locale
          */
@@ -274,6 +347,7 @@
           notify: true,
           observer: '_localeChanged'
         },
+
         /**
          * The minimum allowed date
          */
@@ -281,6 +355,7 @@
           type: Date,
           value: null
         },
+
         /**
          * The maximum allowed date
          */
@@ -288,38 +363,51 @@
           type: Date,
           value: null
         },
+
         /**
          * The currently selected month (1-12)
          */
         currentMonth: {
           type: Number
         },
+
         /**
          * The currently selected year
          */
         currentYear: {
           type: Number
         },
+
         _contentClass: String,
         _months: Array,
         _firstDayOfWeek: Number,
+        // keep track of which date to use, start or end
+        _useStart: Boolean
+
       },
-      behaviors: [
-        Polymer.IronResizableBehavior
-      ],
+
       observers: [
         '_populate(currentYear, currentMonth, minDate, maxDate, locale)',
       ],
+
       listeners: {
         'iron-resize': '_resizeHandler',
         'swiped': '_onSwipe'
       },
+
+      /* TODO: could add arrow keys here too */
+      keyBindings: {
+        'space': '_tapDay',
+        'enter': '_tapDay'
+      },
+
       ready: function() {
         this._updateToday();
         this.currentMonth = this.date.getMonth() + 1;
         this.currentYear = this.date.getFullYear();
         this._transitionEvent = this._whichTransitionEnd();
       },
+
       dateFormat: function(date, format, locale) {
         if (!date) {
           return '';
@@ -328,6 +416,7 @@
         value.locale(locale || this.locale);
         return value.format(format);
       },
+
       _localeChanged: function(locale) {
         var localeMoment = moment();
         localeMoment.locale(locale);
@@ -338,6 +427,7 @@
         this._weekdays = weekdays;
         this._firstDayOfWeek = localeMoment.weekday(0).format('d');
       },
+
       _populate: function(currentYear, currentMonth, minDate, maxDate) {
         var date, month, weeks, day, d, dayInfo, monthData, months = [];
 
@@ -412,30 +502,38 @@
         }
         this.set('_months', months);
         this.async(function() {
-          this._updateSelection();
           this._positionSlider();
         });
       },
+
       _getDayClass: function(cssClass, date) {
         if (date) {
           if (dateDiff(date, this.today) === 0) {
             cssClass += ' today';
           }
-          if (dateDiff(date, this.date) === 0) {
+
+          if (dateDiff(date, this.date) === 0 ||
+              dateDiff(date, this.endDate) === 0) {
             cssClass += ' selected';
-            this.async(function() {
-              this._updateSelection();
-            });
+          }
+
+          if (moment(date).isAfter(this.date) &&
+              moment(date).isBefore(this.endDate)) {
+            cssClass += ' between';
           }
         }
+
         return cssClass;
       },
+
       _isDisabled: function(day, date) {
         return !day || !this._withinValidRange(date);
       },
+
       _getMonthClass: function(name, month) {
         return name + ' month-' + month.year + '-' + month.month;
       },
+
       _onTrack: function(event) {
         var dx = event.detail.dx;
         var dy = event.detail.dy;
@@ -471,7 +569,7 @@
             var fullWidth = width * this._months.length;
             var x = this._startPos + dx;
 
-            // If we're dragging outside the bounds, add some resistence
+            // If we're dragging outside the bounds, add some resistance
             if (x > 0 || x < (-fullWidth + width)) {
               if (isNaN(parseInt(this._resistStart, 10))) {
                 this._resistStart = adx;
@@ -515,6 +613,7 @@
             this._gesture = null;
         }
       },
+
       _swipePrevMonth: function() {
         this._translateX(0, 'swipe', function() {
           this.set('_contentClass', '');
@@ -522,6 +621,7 @@
           this.fire('swiped', {direction: 'right'});
         }.bind(this));
       },
+
       _swipeNextMonth: function() {
         if (!this.maxDate || this.currentMonth < this.maxDate.getMonth() + 1) {
           this._translateX(-this._containerWidth * 2, 'swipe', function() {
@@ -531,12 +631,14 @@
           }.bind(this));
         }
       },
+
       _getMonthIdx: function(pos) {
         // returns the index for the visible month according to the given position
         var width = this._containerWidth;
         var i = Math.floor((-pos + (width/2)) / width);
         return i < 0 ? 0 : i;
       },
+
       _translateX: function(x, transition, cb) {
         if (isNaN(parseInt(x, 10))) {
           throw new Error('Not a number: ' + x);
@@ -572,6 +674,7 @@
           this.transform('translateX(' + x + 'px)', this.$.months);
         }.bind(this));
       },
+
       _getFastestMovement: function(event) {
         // detect flick based on fastest segment of movement
         var l = this._moveQueue.length;
@@ -589,6 +692,7 @@
         }
         return {x: x, y: y, v: Math.sqrt(v2)};
       },
+
       _onSwipe: function(event) {
         if (event.detail.direction === 'right') {
           this._prevMonth();
@@ -596,6 +700,7 @@
           this._nextMonth();
         }
       },
+
       _once: function(eventName, callback, node) {
         node = node || this;
         function onceCallback() {
@@ -604,6 +709,7 @@
         }
         node.addEventListener(eventName, onceCallback);
       },
+
       _incrMonth: function(i) {
         var date = new Date(this.currentYear, this.currentMonth - 1 + i);
         var year = date.getFullYear();
@@ -613,54 +719,112 @@
           this.currentMonth = month;
         }
       },
+
       _prevMonth: function() {
         this._incrMonth(-1);
       },
+
       _nextMonth: function() {
         this._incrMonth(1);
       },
+
+      /* TODO: remove or make more generic */
       _dateChanged: function(date, oldValue) {
         if (!this._isValidDate(date)) {
           console.warn('Invalid date: ' + date);
           this.date = date = oldValue;
         }
+
         if (!this._withinValidRange(date)) {
           console.warn('Date outside of valid range: ' + date);
           this.date = date = oldValue;
         }
+
         this.currentYear = date.getFullYear();
         this.currentMonth = date.getMonth() + 1;
         // Only trigger a notification if there actually is a difference.
         if (oldValue && date.getTime && oldValue.getTime && date.getTime() === oldValue.getTime()) {
           return;
         }
-        this._updateSelection();
       },
+
+      _getTabIndex: function(_, date, startDate, endDate, minDate, maxDate) {
+        if (date === null ||
+            dateDiff(date, startDate) === 0 ||
+            dateDiff(date, endDate) === 0 ||
+            moment(date).isBefore(minDate) ||
+            moment(date).isAfter(maxDate)) {
+          return -1;
+        }
+        return 0;
+      },
+
       _tapDay: function(event) {
-        if (!this._withinValidRange(event.model.item.date)) {
+
+        if (event.model) {
+          var item = event.model.item
+        } else {
+          // for keyboard inputs
+          var el = document.activeElement;
+          date = moment(el.attributes.date.value);
+          item = {};
+          item.date = date.toDate();
+          item.year = date.year();
+          item.month = date.month();
+          item.day = date.date();
+        }
+
+        if (!this._withinValidRange(item.date)) {
           return false;
         }
-        var item = event.model.item;
+
         var newDate = new Date(this.date.getTime());
+
         newDate.setYear(item.year);
         newDate.setMonth(item.month);
         newDate.setDate(item.day);
-        this.date = newDate;
+
+        if (this.date && this.endDate) {
+          this.date = newDate;
+          this.endDate = null;
+          this.useStart = false;
+        } else if (this.date === null) {
+          this.date = newDate;
+          this.useStart = false;
+        } else if (moment(newDate).isBefore(this.date)) {
+          this.endDate = this.date;
+          this.date = newDate;
+          this.useStart = true;
+        } else if (this.date && this.endDate === null) {
+          this.endDate = newDate;
+          this.useStart = true;
+        }  else if (this.useStart) {
+          this.endDate = null;
+          this.date = newDate;
+          this.useStart = false;
+        }  else {
+          this.endDate = newDate;
+          this.useStart = true;
+        }
       },
+
       _isValidDate: function(date) {
         return date && date.getTime && !isNaN(date.getTime());
       },
+
       _withinValidRange: function(date) {
         if (this._isValidDate(date)) {
           return (!this.minDate || date >= this.minDate) && (!this.maxDate || date <= this.maxDate);
         }
         return false;
       },
+
       _monthWithinValidRange: function(year, month) {
         var monthStart = new Date(year, month-1, 1);
         var monthEnd = new Date(year, month, 0);
         return this._withinValidRange(monthStart) || this._withinValidRange(monthEnd);
       },
+
       _positionSlider: function() {
         if (!this._months || !this._containerWidth) {
           return;
@@ -671,38 +835,21 @@
                  ((this._months[0].year * 12) + this._months[0].month);
         this._translateX(-i * this._containerWidth);
       },
-      _updateSelection: function() {
-        // Force the day selection circle to maintain a 1:1 ratio
-        var selected = this.$$('.day-item.selected');
-        if (!selected) {
-          return;
-        }
-        selected.style.height = '';
-        selected.style.width = '';
-        var w = selected.parentElement.offsetWidth;
-        var h = selected.parentElement.offsetHeight;
-        selected.style.flex = '';
-        window.requestAnimationFrame(function() {
-          if (w > 0 && w < h) {
-            selected.style.height = w + 'px';
-          }
-          else if (h > 0) {
-            selected.style.width = h + 'px';
-          }
-        });
-      },
+
       _resizeHandler: function() {
         this._containerWidth = this.$.calendar.offsetWidth;
         this._positionSlider();
-        this._updateSelection();
       },
+
       _getDayName: function(date) {
         return date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate();
       },
+
       _updateToday: function() {
         this.today = new Date();
         this.today.setHours(0, 0, 0, 0);
       },
+
       _whichTransitionEnd: function() {
         var transitions = {
           'WebkitTransition' : 'webkitTransitionEnd',
@@ -717,6 +864,7 @@
           }
         }
       }
+
     });
    })();
   </script>

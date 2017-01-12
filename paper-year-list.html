@@ -85,8 +85,9 @@
           }
         }
       },
+
       ready: function() {
-        // hack for iron-list not to scroll to the first visible index on resize 
+        // hack for iron-list not to scroll to the first visible index on resize
         this.$.yearList._resizeHandler = function() {
           this.debounce('resize', function() {
             this._render();
@@ -97,6 +98,7 @@
           });
         }.bind(this.$.yearList);
       },
+
       /**
        * Scroll in the years list to center the selected year.
        */
@@ -116,6 +118,7 @@
           }.bind(this.$.yearList));
         }
       },
+
       /**
        * Return the selected class if needed.
        */
@@ -124,6 +127,7 @@
           return ' selected';
         }
       },
+
       /**
        * Compute the years array passed to the iron-list.
        */
@@ -137,6 +141,7 @@
         }
         return years;
       },
+
       /**
        * Set 'selected' attribute to the new date's year if it is within range, else set it to null.
        */
@@ -154,6 +159,7 @@
           this.min = 1900;
         }
       },
+
       /**
        * If selected is null, clear iron-list selection,
        * else select it in iron-list and synchronize 'date' attribute.
@@ -169,6 +175,7 @@
         }
         this._selectYearInList(selected);
       },
+
       /**
        * Select the given year in the years list.
        */
@@ -176,6 +183,7 @@
         var yearIdx = year - this.min;
         this.$.yearList.selectItem(yearIdx);
       },
+
       /**
        * Update 'selected' attribute and select in iron-list
        * from a tapped item's event in the years list.
@@ -188,6 +196,7 @@
           this.selected = year;
         }
       },
+
       /**
        * Return true if year is between min and max.
        */
