@@ -1,0 +1,13 @@
+- swipe when focus changes and the month is out of view (not= current
+  month of startDate or endDate, in tracking or _populate, half-done)
+- handle kbd input when no startDate or endDate supplied (navigate
+  calendar area with arrow keys and hit enter to select a date, default
+  first clicked to be start+end dates)
+- get rid of pink background selection
+- fix the minor jank when going backwards from second month to first
+  month. Check out _translateX and _swipePrevMonth.
+
+swipe methods called
+animate UI
+swiped event sent
+changes currentMonth

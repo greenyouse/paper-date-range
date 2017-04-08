@@ -1,4 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="../iron-media-query/iron-media-query.html">
 <link rel="import" href="../neon-animation/neon-animated-pages.html">
 <link rel="import" href="../neon-animation/neon-animatable.html">
@@ -113,12 +114,13 @@ styling:
        @apply(--layout-horizontal);
        @apply(--layout-around-justfied);
        @apply(--layout-center);
-       padding-bottom: 3em;
+       /* padding-bottom: 3em; */
      }
 
      @media screen and (min-width: 728px) {
        #sub-heading {
          @apply(--layout-vertical);
+         @apply(--layout-around-aligned);
          height: 20em;
        }
 
@@ -180,6 +182,12 @@ styling:
      }
     </style>
     <iron-media-query query="{{_getMediaQuery(forceNarrow, responsiveWidth)}}" query-matches="{{_queryMatches}}"></iron-media-query>
+    <iron-a11y-keys target="[[prevBtn]]"
+                    keys="enter space"
+                    on-keys-pressed="_tapPrevDate"></iron-a11y-keys>
+    <iron-a11y-keys target="[[nextBtn]]"
+                    keys="enter space"
+                    on-keys-pressed="_tapNextDate"></iron-a11y-keys>
     <div id="datePicker">
 
       <div id="heading" class="flex">
@@ -187,7 +195,7 @@ styling:
         <div id="sub-heading">
           <div class="date-heading">
             <div class="day" data-date="[[startDate]]" on-tap="_tapHeadingDate">{{dateFormat(startDate, 'dddd', locale)}}</div>
-            <div class="date" on-tap="_tapHeadingDate">
+            <div id="prevBtn" class="date" on-tap="_tapHeadingDate" tabindex="0">
               <template is="dom-repeat" items="{{_splitHeadingDate(startDate, headingFormat, locale)}}">
                 <!-- HACK: added data-date here for passing to fn, see other spots too -->
                 <span data-date="[[startDate]]">{{item}}</span>
@@ -197,7 +205,7 @@ styling:
           <iron-icon icon="date-picker:arrow-forward"></iron-icon>
           <div class="date-heading">
             <div class="day" data-date="[[endDate]]" on-tap="_tapHeadingDate">{{dateFormat(endDate, 'dddd', locale)}}</div>
-            <div class="date" on-tap="_tapHeadingDate">
+            <div id="nextBtn" class="date" on-tap="_tapHeadingDate" tabindex="0">
               <template is="dom-repeat" items="{{_splitHeadingDate(endDate, headingFormat, locale)}}">
                 <span data-date="[[endDate]]">{{item}}</span>
               </template>
@@ -211,7 +219,7 @@ styling:
                            on-iron-select="_pageSelected">
         <neon-animatable id="chooseDate">
           <paper-calendar id="calendar" locale="{{locale}}"
-                          date="{{startDate}}" end-date="{{endDate}}"
+                          start-date="{{startDate}}" end-date="{{endDate}}"
                           min-date="{{minDate}}" max-date="{{maxDate}}">
           </paper-calendar>
         </neon-animatable>
@@ -244,6 +252,7 @@ styling:
           type: String,
           value: '560px'
         },
+
         /**
          * The current locale
          */
@@ -251,6 +260,7 @@ styling:
           type: String,
           value: 'en'
         },
+
         /**
          * The format of the date displayed in the heading.
          * See docuemntation for Moment.js for more info.
@@ -259,20 +269,17 @@ styling:
           type: String,
           value: 'MMM D'
         },
+
         /**
          * The minimum allowed date
          */
-        minDate: {
-          type: Date,
-          value: null
-        },
+        minDate: Date,
+
         /**
          * The maximum allowed date
          */
-        maxDate: {
-          type: Date,
-          value: null
-        },
+        maxDate: Date,
+
         /**
          * Force narrow layout
          */
@@ -280,6 +287,7 @@ styling:
           type: Boolean,
           value: false
         },
+
         narrow: {
           type: Boolean,
           reflectToAttribute: true,
@@ -300,6 +308,20 @@ styling:
           type: String,
           value: '[,]'
         },
+
+        prevBtn: {
+          type: Object,
+          value: function() {
+            return this.$.prevBtn;
+          }
+        },
+
+        nextBtn: {
+          type: Object,
+          value: function() {
+            return this.$.nextBtn;
+          }
+        }
       },
 
       behaviors: [
@@ -325,6 +347,14 @@ styling:
         // tapping the date header while already viewing months brings you back
         // to the selected month
         this.$.calendar.currentMonth = date.getMonth() + 1;
+      },
+
+      _tapPrevDate: function() {
+        this.$.calendar.currentMonth = this.startDate.getMonth() + 1;
+      },
+
+      _tapNextDate: function() {
+        this.$.calendar.currentMonth = this.endDate.getMonth() + 1;
       },
 
       _selectPage: function(page) {

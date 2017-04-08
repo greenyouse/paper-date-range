@@ -1,4 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
@@ -192,7 +193,7 @@
       }
 
       .day-item.selected {
-        background: var(--default-primary-color);
+        background: var(--default-primary-color) !important;
         /* height: 2.5em;
            width: 2.5em; */
       }
@@ -209,10 +210,10 @@
        outline: none;
      }
 
-     .day-item:not([disabled]):focus {
-       outline: 2px solid var(--accent-color);
-       z-index: 1;
-     }
+     /* .day-item:not([disabled]):focus {
+        outline: 2px solid var(--accent-color);
+        z-index: 1;
+        } */
 
       .day-item[disabled] .day {
         color: var(--text-disabled-color, #9d9d9d);
@@ -233,8 +234,38 @@
       .flex-5 {
         @apply(--layout-flex-5);
       }
+
+     .hidden {
+       display: none;
+     }
+
+     .btn {
+       z-index: 1;
+     }
     </style>
-    <div id="calendar">
+    <p id="calendar-desc" class="hidden">Calendar widget for date selection, use arrow keys to scroll the days and Page Up and Page Down to scroll the months.</p>
+    <iron-a11y-keys target="[[nextBtn]]"
+                    keys="enter space"
+                    on-keys-pressed="_nextMonth"></iron-a11y-keys>
+    <iron-a11y-keys target="[[prevBtn]]"
+                    keys="enter space"
+                    on-keys-pressed="_prevMonth"></iron-a11y-keys>
+      <div id="monthNav" class="month-nav">
+        <div class="flex col self-stretch">
+          <div id="prevBtn" class="btn" on-tap="_swipePrevMonth" tabindex="0">
+            <paper-ripple center class="ripple circle"></paper-ripple>
+            <iron-icon class="icon flex" icon="date-picker:chevron-left"></iron-icon>
+          </div>
+        </div>
+        <div class="flex-5"></div>
+        <div class="flex col self-stretch">
+          <div id="nextBtn" class="btn" on-tap="_swipeNextMonth" tabindex="0">
+            <paper-ripple center class="ripple circle"></paper-ripple>
+            <iron-icon class="icon flex" icon="date-picker:chevron-right"></iron-icon>
+          </div>
+        </div>
+      </div>
+    <div id="calendar" role="grid" aria-labelledby="calendar-desc">
       <div id="months" on-track="_onTrack" class$="{{_contentClass}}">
         <template is="dom-repeat" items="{{_months}}" as="month">
           <div class$="{{_getMonthClass('month', month)}}">
@@ -249,13 +280,15 @@
               </template>
             </div>
             <template is="dom-repeat" items="{{month.weeks}}" as="row">
-              <div class="month-row month-days">
+              <div class="month-row month-days" role="row">
                 <template is="dom-repeat" items="{{row}}">
                   <div class="month-col">
-                    <div class$="{{_getDayClass('day-item selection', item.date, today, date, endDate)}}"
+                    <div class$="{{_getDayClass('day-item selection', item.date, today, startDate, endDate)}}"
+                         id$="{{_getId('', item.date, startDate, endDate)}}"
+                         role="gridcell"
                       disabled$="{{_isDisabled(item.day, item.date, minDate, maxDate)}}"
                       on-tap="_tapDay" date$="{{item.name}}"
-                      tabindex$="{{_getTabIndex(0, item.date, date, endDate, minDate, maxDate)}}">
+                      tabindex$="{{_getTabIndex(item.date, startDate, endDate, minDate, maxDate)}}">
                       <div class="day">{{item.day}}</div>
                     </div>
                   </div>
@@ -264,21 +297,6 @@
             </template>
           </div>
         </template>
-      </div>
-      <div id="monthNav" class="month-nav">
-        <div class="flex col self-stretch">
-          <div class="btn" on-tap="_swipePrevMonth">
-            <paper-ripple center class="ripple circle"></paper-ripple>
-            <iron-icon class="icon flex" icon="date-picker:chevron-left"></iron-icon>
-          </div>
-        </div>
-        <div class="flex-5"></div>
-        <div class="flex col self-stretch">
-          <div class="btn" on-tap="_swipeNextMonth">
-            <paper-ripple center class="ripple circle"></paper-ripple>
-            <iron-icon class="icon flex" icon="date-picker:chevron-right"></iron-icon>
-          </div>
-        </div>
       </div>
     </div>
   </template>
@@ -297,7 +315,7 @@
     var RESIST_FACTOR = 2;
 
     // Number of months to preload on both sides of the current month
-    var PRELOAD_MONTHS = 1;
+    var PRELOAD_MONTHS = 6;
 
     function dateDiff(a, b) {
       if (a === null || b === null)
@@ -321,11 +339,12 @@
         /*
          * The selected date
          */
-        date: {
+        startDate: {
           type: Date,
           notify: true,
           value: function() {
-            return new Date();
+            // set to beginning of day, 00:00
+            return moment().add(7, 'days').toDate();
           },
           observer: '_dateChanged'
         },
@@ -334,7 +353,7 @@
           type: Date,
           notify: true,
           value: function() {
-            return moment().add(7, 'days').toDate();
+            return moment().add(14, 'days').toDate();
           }
         },
 
@@ -378,6 +397,20 @@
           type: Number
         },
 
+        prevBtn: {
+          type: Object,
+          value: function() {
+            return this.$.prevBtn;
+          }
+        },
+
+        nextBtn: {
+          type: Object,
+          value: function() {
+            return this.$.nextBtn;
+          }
+        },
+
         _contentClass: String,
         _months: Array,
         _firstDayOfWeek: Number,
@@ -395,16 +428,20 @@
         'swiped': '_onSwipe'
       },
 
-      /* TODO: could add arrow keys here too */
       keyBindings: {
-        'space': '_tapDay',
-        'enter': '_tapDay'
+        'left': 'previousDay',
+        'right': 'nextDay',
+        'up': 'previousWeek',
+        'down': 'nextWeek',
+        'pageup': '_swipePrevMonth',
+        'pagedown': '_swipeNextMonth',
+        'tab': '_focusIndex'
       },
 
       ready: function() {
         this._updateToday();
-        this.currentMonth = this.date.getMonth() + 1;
-        this.currentYear = this.date.getFullYear();
+        this.currentMonth = this.startDate.getMonth() + 1;
+        this.currentYear = this.startDate.getFullYear();
         this._transitionEvent = this._whichTransitionEnd();
       },
 
@@ -506,19 +543,42 @@
         });
       },
 
-      _getDayClass: function(cssClass, date) {
+      _focusIndex: function() {
+        var activeId = document.activeElement.id;
+
+        // fix positioning on start => end tabbing
+        if (activeId == 'start') {
+          this.currentMonth = moment(this.endDate).month() + 1;
+        } else if (activeId == 'end') {
+          this.currentMonth = moment(this.startDate).month() + 1;
+        }
+      },
+
+      _getId: function(_, date, startDate, endDate) {
+        date = moment(date);
+        startDate = moment(startDate);
+        endDate = moment(endDate);
+
+        if (date.isSame(startDate, 'day')) {
+          return 'start';
+        } else if (date.isSame(endDate, 'day')) {
+          return 'end';
+        }
+      },
+
+      _getDayClass: function(cssClass, date, today, startDate, endDate) {
         if (date) {
-          if (dateDiff(date, this.today) === 0) {
+          if (dateDiff(date, today) === 0) {
             cssClass += ' today';
           }
 
-          if (dateDiff(date, this.date) === 0 ||
-              dateDiff(date, this.endDate) === 0) {
+          if (dateDiff(date, startDate) === 0 ||
+              dateDiff(date, endDate) === 0) {
             cssClass += ' selected';
           }
 
-          if (moment(date).isAfter(this.date) &&
-              moment(date).isBefore(this.endDate)) {
+          if (moment(date).isAfter(startDate) &&
+              moment(date).isBefore(endDate)) {
             cssClass += ' between';
           }
         }
@@ -614,8 +674,33 @@
         }
       },
 
+      /**
+       * maintains focus on the current element across an animation
+       *
+       * @param activeId {String} the ID attribute of the active element
+       */
+      _delayedRefocus() {
+        var activeId = document.activeElement.id;
+
+        if ((activeId == 'start') ||
+            (activeId == 'end'))
+        var queryStr = '#' + activeId;
+
+        setTimeout(function() {
+          this.$$(queryStr).focus();
+        }.bind(this), 500);
+      },
+
       _swipePrevMonth: function() {
-        this._translateX(0, 'swipe', function() {
+        /* this._delayedRefocus.bind(this)();*/
+
+        var currentTime = moment([this.currentYear, this.currentMonth]),
+            minTime = moment(this.minDate);
+
+        var idxPos = currentTime.diff(minTime, 'months') * (this.offsetWidth / 2);
+
+        if (idxPos <= 0) return;
+        this._translateX(-idxPos, 'swipe', function() {
           this.set('_contentClass', '');
           this.transform('translateX(' + this._startPos + 'px)', this.$.months);
           this.fire('swiped', {direction: 'right'});
@@ -623,8 +708,20 @@
       },
 
       _swipeNextMonth: function() {
+        /* this._delayedRefocus.bind(this)();*/
+
+        var currentTime = moment([this.currentYear, this.currentMonth]),
+            minTime = moment(this.minDate),
+            maxTime = moment(this.maxDate);
+
+        var maxDiff = maxTime.diff(minTime, 'months');
+        var idxPos = currentTime.diff(minTime, 'months') + 1;
+
+        // only swipe right when there are more months left
+        if (idxPos >= maxDiff) return;
+        var origin = -this._containerWidth * idxPos;
         if (!this.maxDate || this.currentMonth < this.maxDate.getMonth() + 1) {
-          this._translateX(-this._containerWidth * 2, 'swipe', function() {
+          this._translateX(origin, 'swipe', function() {
             this.set('_contentClass', '');
             this.transform('translateX(' + this._startPos + 'px)', this.$.months);
             this.fire('swiped', {direction: 'left'});
@@ -643,25 +740,31 @@
         if (isNaN(parseInt(x, 10))) {
           throw new Error('Not a number: ' + x);
         }
+
         this._currentPos = x;
+
         if (transition) {
           if (this._transitionDuration) {
             this.$.months.style.transitionDuration = this._transitionDuration + 'ms';
           }
+
           this._once(this._transitionEvent, function() {
             this.set('_contentClass', '');
             this.$.months.style.transitionDuration = '';
             this._transitionDuration = null;
             this.$.monthNav.style.removeProperty('opacity');
+
             if (cb) {
               cb();
             }
           }.bind(this), this.$.months);
+
           this.set('_contentClass', 'animating ' + transition);
           this.$.monthNav.style.removeProperty('opacity');
           // Fixes odd bug in chrome where we lose touch-events after changing opacity
           this._once('touchstart', function() {});
         }
+
         window.requestAnimationFrame(function() {
           if (!transition) {
             var halfWidth = this._containerWidth / 2;
@@ -671,6 +774,7 @@
             var opacity = Math.abs(parseFloat(p).toFixed(2));
             this.$.monthNav.style.opacity = opacity;
           }
+
           this.transform('translateX(' + x + 'px)', this.$.months);
         }.bind(this));
       },
@@ -711,9 +815,9 @@
       },
 
       _incrMonth: function(i) {
-        var date = new Date(this.currentYear, this.currentMonth - 1 + i);
+        var date = new Date(this.currentYear, this.currentMonth + i);
         var year = date.getFullYear();
-        var month = date.getMonth() + 1;
+        var month = date.getMonth();
         if (this._monthWithinValidRange(year, month)) {
           this.currentYear = year;
           this.currentMonth = month;
@@ -732,12 +836,12 @@
       _dateChanged: function(date, oldValue) {
         if (!this._isValidDate(date)) {
           console.warn('Invalid date: ' + date);
-          this.date = date = oldValue;
+          this.startDate = date = oldValue;
         }
 
         if (!this._withinValidRange(date)) {
           console.warn('Date outside of valid range: ' + date);
-          this.date = date = oldValue;
+          this.startDate = date = oldValue;
         }
 
         this.currentYear = date.getFullYear();
@@ -748,59 +852,191 @@
         }
       },
 
-      _getTabIndex: function(_, date, startDate, endDate, minDate, maxDate) {
-        if (date === null ||
-            dateDiff(date, startDate) === 0 ||
-            dateDiff(date, endDate) === 0 ||
-            moment(date).isBefore(minDate) ||
-            moment(date).isAfter(maxDate)) {
-          return -1;
+      _getTabIndex: function(date, startDate, endDate, minDate, maxDate) {
+        date = moment(date);
+        if (date.isSame(startDate, 'day') ||
+            date.isSame(endDate, 'day')) {
+          return 0;
         }
-        return 0;
+
+        // don't use any tabindex (setting -1 has a weird bug with today being selected + tabs loop)
+        return false;
       },
 
-      _tapDay: function(event) {
+      // return whether focused element is startDate, endDate, or neither
+      _getDayType: function(date, newDate) {
+        var startDate = this.startDate,
+            endDate = this.endDate,
+            dayType = '';
 
-        if (event.model) {
-          var item = event.model.item
-        } else {
-          // for keyboard inputs
-          var el = document.activeElement;
-          date = moment(el.attributes.date.value);
-          item = {};
-          item.date = date.toDate();
-          item.year = date.year();
-          item.month = date.month();
-          item.day = date.date();
+        // HACK: yuck
+        if (date.isSame(startDate, 'day') &&
+            (newDate.isBefore(endDate, 'day') ||
+             newDate.isSame(endDate, 'day'))) {
+          dayType += 'start';
+        } else if (date.isSame(endDate, 'day') &&
+                   newDate.isAfter(startDate, 'day')) {
+          dayType += 'end';
+        } else if (date.isSame(endDate, 'day') &&
+                   newDate.isSame(startDate, 'day')) {
+          dayType += 'merge';
+        } else if (date.isSame(endDate, 'day') &&
+                   newDate.isBefore(startDate, 'day')) {
+          dayType += 'swapStart';
+        } else if  (date.isSame(startDate, 'day') &&
+                    date.isBefore(endDate, 'day')) {
+          dayType += 'swapEnd';
         }
+
+        return dayType;
+      },
+
+      changeDate: function(date, newDate) {
+        // determine if start or end, swap if necessary
+        // check if in range min/max
+        // change date and move focus
+        // swipe month if there's a month change?
+        // swipe when tabbing between months?
+        var dayType = this._getDayType(date, newDate);
+        // stop if the focused element isn't a start or end date
+        if (dayType === '') {
+          return;
+        }
+
+        // make sure the new date is in the date range
+        if (!newDate.isBetween(this.minDate, this.maxDate, null, '[]')) {
+          return;
+        }
+
+        switch (dayType) {
+          case 'start':
+            var oldDate = this.startDate,
+                isAfter = newDate.isAfter(oldDate, 'month'),
+                isBefore = newDate.isBefore(oldDate, 'month');
+
+            // swipe the month when the month changes
+            if (isAfter || isBefore) {
+              if (isAfter) {
+                this._swipeNextMonth();
+              } else {
+                this._swipePrevMonth();
+              }
+              setTimeout(function() {
+                this.startDate = newDate.toDate();
+                this.$$('#start').focus();
+              }.bind(this), 500);
+            } else {
+              this.startDate = newDate.toDate();
+              this.$$('#start').focus();
+            }
+
+            break;
+          case 'end':
+            var oldDate = this.endDate,
+                isAfter = newDate.isAfter(oldDate, 'month'),
+                isBefore = newDate.isBefore(oldDate, 'month');
+
+            if (isAfter || isBefore) {
+              if (isAfter) {
+                this._swipeNextMonth();
+              } else {
+                this._swipePrevMonth();
+              }
+
+              // delay for the month-scroll animation to finish
+              setTimeout(function() {
+                this.endDate = newDate.toDate();
+                this.$$('#end').focus();
+              }.bind(this), 500);
+            } else {
+
+              this.endDate = newDate.toDate();
+              this.$$('#end').focus();
+            }
+
+            break;
+          case 'merge':
+            this.endDate = newDate.toDate();
+            this.$$('#start').focus();
+            break;
+          case 'swapStart':
+            this.endDate = this.startDate;
+            this.startDate = newDate.toDate();
+            this.$$('#start').focus();
+            break;
+          case 'swapEnd':
+            this.startDate = this.endDate;
+            this.endDate = newDate.toDate();
+            this.$$('#end').focus();
+            break;
+        }
+
+      },
+
+      previousDay: function() {
+        var date = document.activeElement.getAttribute('date');
+        var start= moment(date),
+            newDate = moment(date).subtract(1, 'day');
+        this.changeDate.bind(this, start, newDate)();
+      },
+
+      nextDay: function() {
+        var date = document.activeElement.getAttribute('date');
+        var start= moment(date),
+            newDate = moment(date).add(1, 'day');
+        this.changeDate.bind(this, start, newDate)();
+      },
+
+      previousWeek: function() {
+        var date = document.activeElement.getAttribute('date');
+        var start= moment(date),
+            newDate = moment(date).subtract(1, 'week');
+        this.changeDate.bind(this, start, newDate)();
+      },
+
+      nextWeek: function() {
+        var date = document.activeElement.getAttribute('date');
+        var start= moment(date),
+            newDate = moment(date).add(1, 'week');
+        this.changeDate.bind(this, start, newDate)();
+      },
+
+      // TODO: handle for kbd inputs
+      /* _kbdDay: function() {
+       *   console.log('boop');
+       * },*/
+
+      _tapDay: function(event) {
+        var item = event.model.item;
 
         if (!this._withinValidRange(item.date)) {
           return false;
         }
 
-        var newDate = new Date(this.date.getTime());
+        var newDate = new Date(this.startDate.getTime());
 
+        // TODO: refactor with momentJS
         newDate.setYear(item.year);
         newDate.setMonth(item.month);
         newDate.setDate(item.day);
 
-        if (this.date && this.endDate) {
-          this.date = newDate;
+        if (this.startDate && this.endDate) {
+          this.startDate = newDate;
           this.endDate = null;
           this.useStart = false;
-        } else if (this.date === null) {
-          this.date = newDate;
+        } else if (this.startDate === null) {
+          this.startDate = newDate;
           this.useStart = false;
-        } else if (moment(newDate).isBefore(this.date)) {
-          this.endDate = this.date;
-          this.date = newDate;
+        } else if (moment(newDate).isBefore(this.startDate)) {
+          this.endDate = this.startDate;
+          this.startDate = newDate;
           this.useStart = true;
-        } else if (this.date && this.endDate === null) {
+        } else if (this.startDate && this.endDate === null) {
           this.endDate = newDate;
           this.useStart = true;
         }  else if (this.useStart) {
           this.endDate = null;
-          this.date = newDate;
+          this.startDate = newDate;
           this.useStart = false;
         }  else {
           this.endDate = newDate;
@@ -829,6 +1065,15 @@
         if (!this._months || !this._containerWidth) {
           return;
         }
+        var currentTime = moment([this.currentYear, this.currentMonth]),
+            minTime = moment(this.minDate),
+            maxTime = moment(this.maxDate);
+
+        var maxDiff = maxTime.diff(minTime, 'months');
+        var idxPos = currentTime.diff(minTime, 'months');
+
+        var origin = -this._containerWidth * idxPos;
+
         this._scrollWidth = (this.$.calendar.offsetWidth * this._months.length);
         this.$.months.style.minWidth = this._scrollWidth + 'px';
         var i = ((this.currentYear * 12) + this.currentMonth) -
