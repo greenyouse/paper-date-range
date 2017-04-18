@@ -677,7 +677,7 @@
 
         setTimeout(function() {
           this.$$(queryStr).focus();
-        }.bind(this), 500);
+        }.bind(this), 10);
       },
 
       _swipePrevMonth: function() {
@@ -883,7 +883,7 @@
               setTimeout(function() {
                 this.startDate = newDate.toDate();
                 this.$$('#start').focus();
-              }.bind(this), 500);
+              }.bind(this), 10);
             } else {
               this.startDate = newDate.toDate();
               this.$$('#start').focus();
@@ -906,7 +906,7 @@
               setTimeout(function() {
                 this.endDate = newDate.toDate();
                 this.$$('#end').focus();
-              }.bind(this), 500);
+              }.bind(this), 10);
             } else {
 
               this.endDate = newDate.toDate();
