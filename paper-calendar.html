@@ -692,41 +692,11 @@
       },
 
       _swipePrevMonth: function() {
-        /* this._delayedRefocus.bind(this)();*/
-
-        var currentTime = moment([this.currentYear, this.currentMonth]),
-            minTime = moment(this.minDate);
-
-        var idxPos = currentTime.diff(minTime, 'months') * (this.offsetWidth / 2);
-
-        if (idxPos <= 0) return;
-        this._translateX(-idxPos, 'swipe', function() {
-          this.set('_contentClass', '');
-          this.transform('translateX(' + this._startPos + 'px)', this.$.months);
-          this.fire('swiped', {direction: 'right'});
-        }.bind(this));
+        this.currentMonth -= 1;
       },
 
       _swipeNextMonth: function() {
-        /* this._delayedRefocus.bind(this)();*/
-
-        var currentTime = moment([this.currentYear, this.currentMonth]),
-            minTime = moment(this.minDate),
-            maxTime = moment(this.maxDate);
-
-        var maxDiff = maxTime.diff(minTime, 'months');
-        var idxPos = currentTime.diff(minTime, 'months') + 1;
-
-        // only swipe right when there are more months left
-        if (idxPos >= maxDiff) return;
-        var origin = -this._containerWidth * idxPos;
-        if (!this.maxDate || this.currentMonth < this.maxDate.getMonth() + 1) {
-          this._translateX(origin, 'swipe', function() {
-            this.set('_contentClass', '');
-            this.transform('translateX(' + this._startPos + 'px)', this.$.months);
-            this.fire('swiped', {direction: 'left'});
-          }.bind(this));
-        }
+        this.currentMonth += 1;
       },
 
       _getMonthIdx: function(pos) {
