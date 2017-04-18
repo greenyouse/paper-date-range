@@ -273,12 +273,22 @@ styling:
         /**
          * The minimum allowed date
          */
-        minDate: Date,
+        minDate: {
+          type: Date,
+          value: function() {
+            return moment().toDate();
+          }
+        },
 
         /**
          * The maximum allowed date
          */
-        maxDate: Date,
+        maxDate: {
+          type: Date,
+          value: function() {
+            return moment().add(9, 'months').toDate();
+          }
+        },
 
         /**
          * Force narrow layout
