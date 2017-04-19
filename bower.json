@@ -1,7 +1,7 @@
 {
   "name": "paper-date-range",
   "description": "Provides a responsive date picker based on the material design spec",
-  "main": "paper-date-picker.html",
+  "main": "paper-daterange-picker.html",
   "keywords": [
     "web-components",
     "polymer",

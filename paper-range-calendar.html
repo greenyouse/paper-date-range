@@ -12,7 +12,7 @@
 <link rel="import" href="../moment-element/moment-import.html">
 <link rel="import" href="paper-date-picker-icons.html">
 
-<dom-module id="paper-calendar">
+<dom-module id="paper-range-calendar">
   <template>
     <style>
       :host {
@@ -30,7 +30,7 @@
         --ease-in-sine: cubic-bezier(0.47, 0, 0.745, 0.715);
         --ease-out-sine: cubic-bezier(0.39, 0.575, 0.565, 1);
         @apply(--paper-font-body1);
-        @apply(--paper-calendar);
+        @apply(--paper-range-calendar);
         overflow: hidden;
         -webkit-touch-callout: none;
         -webkit-user-select: none;
@@ -39,7 +39,7 @@
         -ms-user-select: none;
         user-select: none;
 
-        @apply(--paper-calendar);
+        @apply(--paper-range-calendar);
       }
       #calendar {
         position: relative;
@@ -317,7 +317,7 @@
     }
 
     Polymer({
-      is: 'paper-calendar',
+      is: 'paper-range-calendar',
 
       behaviors: [
         Polymer.IronA11yKeysBehavior,

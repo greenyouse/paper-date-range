@@ -13,8 +13,8 @@
 <link rel="import" href="../paper-styles/shadow.html">
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../moment-element/moment-with-locales-import.html">
-<link rel="import" href="paper-calendar.html">
-<link rel="import" href="paper-date-picker-dialog-style.html">
+<link rel="import" href="paper-range-calendar.html">
+<link rel="import" href="paper-daterange-picker-dialog-style.html">
 
 <!--
 Material Design [Pickers](http://www.google.com/design/spec/components/pickers.html)
@@ -25,41 +25,41 @@ Provides a responsive date picker based on the material design spec.
 
 Default picker:
 
-    <paper-date-picker></paper-date-picker>
+    <paper-daterange-picker></paper-daterange-picker>
 
 Setting the initial date to April 20, 2015:
 
-    <paper-date-picker date="April 20, 2015"></paper-date-picker>
+    <paper-daterange-picker date="April 20, 2015"></paper-daterange-picker>
 
 You may also specify a minimum and/or maximum date allowed in this picker using
 the same date notation:
 
-    <paper-date-picker min-date="April 1, 2015" max-date="June 30, 2015"></paper-date-picker>
+    <paper-daterange-picker min-date="April 1, 2015" max-date="June 30, 2015"></paper-daterange-picker>
 
 If you include this element as part of `paper-dialog`, use the class
-`"paper-date-picker-dialog"` on the dialog element in order to give it proper
+`"paper-daterange-picker-dialog"` on the dialog element in order to give it proper
 styling:
 
-    <paper-dialog id="dialog" class="paper-date-picker-dialog" modal
+    <paper-dialog id="dialog" class="paper-daterange-picker-dialog" modal
       on-iron-overlay-closed="dismissDialog">
-      <paper-date-picker id="picker" date="[[date]]"></paper-date-picker>
+      <paper-daterange-picker id="picker" date="[[date]]"></paper-daterange-picker>
       <div class="buttons">
         <paper-button dialog-dismiss>Cancel</paper-button>
         <paper-button dialog-confirm>OK</paper-button>
       </div>
     </paper-dialog>
 
-@element paper-date-picker
+@element paper-daterange-picker
 @blurb Provides a responsive date picker based on the material design spec.
-@homepage http://bendavis78.github.io/paper-date-picker/
+@homepage http://bendavis78.github.io/paper-daterange-picker/
 @demo demo/index.html
 -->
 
-<style is="custom-style" include="paper-date-picker-dialog-style">
+<style is="custom-style" include="paper-daterange-picker-dialog-style">
   /* includes dialog style at document-level for backward compatibility */
 </style>
 
-<dom-module id="paper-date-picker">
+<dom-module id="paper-daterange-picker">
   <template>
     <style>
       :host {
@@ -72,7 +72,7 @@ styling:
         display: inline-block;
         color: var(--primary-text-color);
         @apply(--paper-font-body1);
-        @apply(--paper-date-picker);
+        @apply(--paper-daterange-picker);
       }
 
       /** Landscape ******************/
@@ -84,7 +84,7 @@ styling:
 
       #heading {
         width: 168px;
-        @apply(--paper-date-picker-heading);
+        @apply(--paper-daterange-picker-heading);
       }
 
       /** Narrow *********************/
@@ -150,7 +150,7 @@ styling:
         @apply(--paper-font-headline);
         font-weight: bold;
         margin-top: 2px;
-        @apply(--paper-date-picker-heading-date);
+        @apply(--paper-daterange-picker-heading-date);
       }
 
       div.date {
@@ -164,7 +164,7 @@ styling:
       .day {
         @apply(--paper-font-body2);
         font-size: 16px;
-        @apply(--paper-date-picker-heading-date);
+        @apply(--paper-daterange-picker-heading-date);
       }
 
       /** Calendar picker ********/
@@ -176,8 +176,8 @@ styling:
       }
 
      #calendar {
-       --paper-calendar: {
-         @apply(--paper-date-picker-calendar);
+       --paper-range-calendar: {
+         @apply(--paper-daterange-picker-calendar);
        }
      }
     </style>
@@ -218,10 +218,10 @@ styling:
                            entry-animation="fade-in-animation" exit-animation="fade-out-animation"
                            on-iron-select="_pageSelected">
         <neon-animatable id="chooseDate">
-          <paper-calendar id="calendar" locale="{{locale}}"
+          <paper-range-calendar id="calendar" locale="{{locale}}"
                           start-date="{{startDate}}" end-date="{{endDate}}"
                           min-date="{{minDate}}" max-date="{{maxDate}}">
-          </paper-calendar>
+          </paper-range-calendar>
         </neon-animatable>
       </neon-animated-pages>
     </div>
@@ -229,7 +229,7 @@ styling:
   <script>
 
     Polymer({
-      is: 'paper-date-picker',
+      is: 'paper-daterange-picker',
       properties: {
         /**
          * The selected date (YYYY-MM-DD)
