@@ -276,7 +276,7 @@ styling:
         minDate: {
           type: Date,
           value: function() {
-            return moment().toDate();
+            return moment().subtract(1, 'days').toDate();
           }
         },
 
