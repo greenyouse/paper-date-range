@@ -344,6 +344,10 @@ styling:
         'iron-resize': '_resizeHandler'
       },
 
+      observers: [
+        '_fireUpdate(startDate, endDate)'
+      ],
+
       ready: function() {
         this.today = this.$.calendar.today;
         this.isTouch = 'ontouchstart' in window;
@@ -409,7 +413,16 @@ styling:
         this._resizing = false;
 
         this.updateStyles();
+      },
+
+      // event to notify parent element of date changes
+      _fireUpdate: function() {
+        // use a small time delay for element attrs to propagate changes
+        setTimeout(function() {
+          this.fire('update');
+        }.bind(this), 100);
       }
+
     });
   </script>
 </dom-module>
