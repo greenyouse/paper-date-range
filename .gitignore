@@ -4,3 +4,5 @@ components
 bower_components
 node_modules
 gulpfile.js
+/old-paper-calendar.html
+/old-paper-date-picker.html

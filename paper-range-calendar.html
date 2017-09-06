@@ -235,20 +235,22 @@
     <p id="calendar-desc" class="hidden">Calendar widget for date selection, use arrow keys to scroll the days and Page Up and Page Down to scroll the months.</p>
     <iron-a11y-keys target="[[nextBtn]]"
                     keys="enter space"
-                    on-keys-pressed="_nextMonth"></iron-a11y-keys>
+                    on-keys-pressed="_swipeNextMonth"></iron-a11y-keys>
     <iron-a11y-keys target="[[prevBtn]]"
                     keys="enter space"
-                    on-keys-pressed="_prevMonth"></iron-a11y-keys>
+                    on-keys-pressed="_swipePrevMonth"></iron-a11y-keys>
       <div id="monthNav" class="month-nav">
         <div class="flex col self-stretch">
-          <div id="prevBtn" class="btn" on-tap="_swipePrevMonth" tabindex="0">
+          <div id="prevBtn" class="btn" on-tap="_swipePrevMonth"
+               tabindex="0">
             <paper-ripple center class="ripple circle"></paper-ripple>
             <iron-icon class="icon flex" icon="date-picker:chevron-left"></iron-icon>
           </div>
         </div>
         <div class="flex-5"></div>
         <div class="flex col self-stretch">
-          <div id="nextBtn" class="btn" on-tap="_swipeNextMonth" tabindex="0">
+          <div id="nextBtn" class="btn" on-tap="_swipeNextMonth"
+               tabindex="0">
             <paper-ripple center class="ripple circle"></paper-ripple>
             <iron-icon class="icon flex" icon="date-picker:chevron-right"></iron-icon>
           </div>
@@ -275,9 +277,10 @@
                     <div class$="{{_getDayClass('day-item selection', item.date, today, startDate, endDate)}}"
                          id$="{{_getId('', item.date, startDate, endDate)}}"
                          role="gridcell"
+                         on-focus="_focusIndex"
                       disabled$="{{_isDisabled(item.day, item.date, minDate, maxDate)}}"
                       on-tap="_tapDay" date$="{{item.name}}"
-                      tabindex$="{{_getTabIndex(item.date, startDate, endDate, minDate, maxDate)}}">
+                      tabindex$="{{_getTabIndex(item.date, startDate, endDate)}}">
                       <div class="day">{{item.day}}</div>
                     </div>
                   </div>
@@ -304,7 +307,7 @@
     var RESIST_FACTOR = 2;
 
     // Number of months to preload on both sides of the current month
-    var PRELOAD_MONTHS = 6;
+    var PRELOAD_MONTHS = 9;
 
     function dateDiff(a, b) {
       if (a === null || b === null)
@@ -409,12 +412,11 @@
       },
 
       observers: [
-        '_populate(currentYear, currentMonth, minDate, maxDate, locale)',
+        '_populate(currentYear, currentMonth, minDate, maxDate, locale)'
       ],
 
       listeners: {
-        'iron-resize': '_resizeHandler',
-        'swiped': '_onSwipe'
+        'iron-resize': '_resizeHandler'
       },
 
       keyBindings: {
@@ -423,8 +425,7 @@
         'up': 'previousWeek',
         'down': 'nextWeek',
         'pageup': '_swipePrevMonth',
-        'pagedown': '_swipeNextMonth',
-        'tab': '_focusIndex'
+        'pagedown': '_swipeNextMonth'
       },
 
       ready: function() {
@@ -532,16 +533,16 @@
         });
       },
 
-      // FIXME: doesn't work, buggy
-      _focusIndex: function() {
-        var activeId = document.activeElement.id;
+      _focusIndex: function(e) {
+        // every keyboard event calls _focusIndex
+        // so this calls preventDefault on all keyboard events
+        e.preventDefault();
+        var month = e.model.item.date.getMonth() + 1;
 
-        // fix positioning on start => end tabbing
-        if (activeId == 'start') {
-          this.currentMonth = moment(this.endDate).month() + 1;
-        } else if (activeId == 'end') {
-          this.currentMonth = moment(this.startDate).month() + 1;
-        }
+          var that = this
+          setTimeout(function() {
+            that.set('currentMonth', month);
+          }, 10);
       },
 
       _getId: function(_, date, startDate, endDate) {
@@ -664,29 +665,24 @@
         }
       },
 
-      /**
-       * maintains focus on the current element across an animation
-       *
-       * @param activeId {String} the ID attribute of the active element
-       */
-      _delayedRefocus() {
-        var activeId = document.activeElement.id;
-
-        if ((activeId == 'start') ||
-            (activeId == 'end'))
-        var queryStr = '#' + activeId;
-
-        setTimeout(function() {
-          this.$$(queryStr).focus();
-        }.bind(this), 10);
-      },
-
       _swipePrevMonth: function() {
-        this.currentMonth -= 1;
+        var month = this.currentMonth - 1;
+        if (month < 1) {
+          month += 12;
+          var year = this.currentYear - 1;
+          this.set('currentYear', year);
+        }
+        this.set('currentMonth', month);
       },
 
       _swipeNextMonth: function() {
-        this.currentMonth += 1;
+        var month = this.currentMonth + 1;
+        if (month > 12) {
+          month -= 12;
+          var year = this.currentYear + 1;
+          this.set('currentYear', year);
+        }
+        this.set('currentMonth', month);
       },
 
       _getMonthIdx: function(pos) {
@@ -757,14 +753,6 @@
         return {x: x, y: y, v: Math.sqrt(v2)};
       },
 
-      _onSwipe: function(event) {
-        if (event.detail.direction === 'right') {
-          this._prevMonth();
-        } else {
-          this._nextMonth();
-        }
-      },
-
       _once: function(eventName, callback, node) {
         node = node || this;
         function onceCallback() {
@@ -772,24 +760,6 @@
           callback.apply(null, arguments);
         }
         node.addEventListener(eventName, onceCallback);
-      },
-
-      _incrMonth: function(i) {
-        var date = new Date(this.currentYear, this.currentMonth + i);
-        var year = date.getFullYear();
-        var month = date.getMonth();
-        if (this._monthWithinValidRange(year, month)) {
-          this.currentYear = year;
-          this.currentMonth = month;
-        }
-      },
-
-      _prevMonth: function() {
-        this._incrMonth(-1);
-      },
-
-      _nextMonth: function() {
-        this._incrMonth(1);
       },
 
       /* TODO: remove or make more generic */
@@ -812,7 +782,7 @@
         }
       },
 
-      _getTabIndex: function(date, startDate, endDate, minDate, maxDate) {
+      _getTabIndex: function(date, startDate, endDate) {
         date = moment(date);
         if (date.isSame(startDate, 'day') ||
             date.isSame(endDate, 'day')) {
@@ -961,11 +931,6 @@
         this.changeDate.bind(this, start, newDate)();
       },
 
-      // TODO: handle for kbd inputs
-      /* _kbdDay: function() {
-       *   console.log('boop');
-       * },*/
-
       _tapDay: function(event) {
         var item = event.model.item;
 
@@ -1004,6 +969,7 @@
         }
       },
 
+      // TODO: refactor with momentJS
       _isValidDate: function(date) {
         return date && date.getTime && !isNaN(date.getTime());
       },
@@ -1021,23 +987,19 @@
         return this._withinValidRange(monthStart) || this._withinValidRange(monthEnd);
       },
 
+      // FIXME: focusing endDate gets the calendar off track...
       _positionSlider: function() {
         if (!this._months || !this._containerWidth) {
           return;
         }
-        var currentTime = moment([this.currentYear, this.currentMonth]),
-            minTime = moment(this.minDate),
-            maxTime = moment(this.maxDate);
 
-        var maxDiff = maxTime.diff(minTime, 'months');
-        var idxPos = currentTime.diff(minTime, 'months');
-
-        var origin = -this._containerWidth * idxPos;
-
+        // need to compare the last month in _months array to position properly
         this._scrollWidth = (this.$.calendar.offsetWidth * this._months.length);
         this.$.months.style.minWidth = this._scrollWidth + 'px';
+        // diff the current month from starting month to position the calendar
         var i = ((this.currentYear * 12) + this.currentMonth) -
-                 ((this._months[0].year * 12) + this._months[0].month);
+                ((this._months[0].year * 12) + this._months[0].month);
+
         this._translateX(-i * this._containerWidth);
       },
 
