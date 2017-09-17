@@ -16,10 +16,10 @@
 
   <body unresolved>
     <style>
-      paper-year-list {
-        height: 400px;
-        width: 200px;
-      }
+     paper-year-list {
+       height: 400px;
+       width: 200px;
+     }
     </style>
     <template is="dom-bind" id="scope">
       <paper-year-list id="yearList"></paper-year-list>
@@ -27,10 +27,10 @@
     </template>
 
     <script>
-      var scope = document.getElementById('scope');
-      scope.centerSelected = function() {
-        this.$.yearList.centerSelected();
-      };
+     var scope = document.getElementById('scope');
+     scope.centerSelected = function() {
+       this.$.yearList.centerSelected();
+     };
     </script>
   </body>
 </html>

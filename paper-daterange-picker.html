@@ -1,10 +1,8 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="../iron-media-query/iron-media-query.html">
-<link rel="import" href="../neon-animation/neon-animated-pages.html">
-<link rel="import" href="../neon-animation/neon-animatable.html">
-<link rel="import" href="../neon-animation/animations/fade-in-animation.html">
-<link rel="import" href="../neon-animation/animations/fade-out-animation.html">
 <link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../iron-selector/iron-selector.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
@@ -16,172 +14,135 @@
 <link rel="import" href="paper-range-calendar.html">
 <link rel="import" href="paper-daterange-picker-dialog-style.html">
 
-<!--
-Material Design [Pickers](http://www.google.com/design/spec/components/pickers.html)
-
-Provides a responsive date picker based on the material design spec.
-
-## Examples:
-
-Default picker:
-
-    <paper-daterange-picker></paper-daterange-picker>
-
-Setting the initial date to April 20, 2015:
-
-    <paper-daterange-picker date="April 20, 2015"></paper-daterange-picker>
-
-You may also specify a minimum and/or maximum date allowed in this picker using
-the same date notation:
-
-    <paper-daterange-picker min-date="April 1, 2015" max-date="June 30, 2015"></paper-daterange-picker>
-
-If you include this element as part of `paper-dialog`, use the class
-`"paper-daterange-picker-dialog"` on the dialog element in order to give it proper
-styling:
-
-    <paper-dialog id="dialog" class="paper-daterange-picker-dialog" modal
-      on-iron-overlay-closed="dismissDialog">
-      <paper-daterange-picker id="picker" date="[[date]]"></paper-daterange-picker>
-      <div class="buttons">
-        <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button dialog-confirm>OK</paper-button>
-      </div>
-    </paper-dialog>
-
-@element paper-daterange-picker
-@blurb Provides a responsive date picker based on the material design spec.
-@homepage http://bendavis78.github.io/paper-daterange-picker/
-@demo demo/index.html
--->
-
-<style is="custom-style" include="paper-daterange-picker-dialog-style">
-  /* includes dialog style at document-level for backward compatibility */
-</style>
+<custom-style>
+  <style include="paper-daterange-picker-dialog-style">
+   /* includes dialog style at document-level for backward compatibility */
+  </style>
+</custom-style>
 
 <dom-module id="paper-daterange-picker">
   <template>
     <style>
-      :host {
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -khtml-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-        display: inline-block;
-        color: var(--primary-text-color);
-        @apply(--paper-font-body1);
-        @apply(--paper-daterange-picker);
-      }
+     :host {
+       -webkit-touch-callout: none;
+       -webkit-user-select: none;
+       -khtml-user-select: none;
+       -moz-user-select: none;
+       -ms-user-select: none;
+       user-select: none;
+       display: inline-block;
+       color: var(--primary-text-color);
+       @apply --paper-font-body1;
+       @apply --paper-daterange-picker;
+     }
 
-      /** Landscape ******************/
-      #datePicker {
-        width: 512px;
-        height: 248px;
-        @apply(--layout-horizontal);
-      }
+     /** Landscape ******************/
+     #datePicker {
+       width: 512px;
+       height: 248px;
+       @apply --layout-horizontal;
+     }
 
-      #heading {
-        width: 168px;
-        @apply(--paper-daterange-picker-heading);
-      }
+     #heading {
+       width: 168px;
+       @apply --paper-daterange-picker-heading;
+     }
 
-      /** Narrow *********************/
-      :host([narrow]) #datePicker {
-        width: 328px;
-        height: 428px;
-        @apply(--layout-vertical);
-      }
+     /** Narrow *********************/
+     :host([narrow]) #datePicker {
+       width: 328px;
+       height: 428px;
+       @apply --layout-vertical;
+     }
 
-      :host([narrow]) #heading {
-        width: auto;
-        height: 96px;
-        padding: 16px 24px;
-      }
+     :host([narrow]) #heading {
+       width: auto;
+       height: 96px;
+       padding: 16px 24px;
+     }
 
-      /** Heading ********************/
-      #heading {
-        background: var(--default-primary-color);
-        box-sizing: border-box;
-        color: var(--text-primary-color);
-        padding: 16px;
-        @apply(--layout-vertical);
-        @apply(--layout-around-justfied);
-      }
+     /** Heading ********************/
+     #heading {
+       background: var(--default-primary-color);
+       box-sizing: border-box;
+       color: var(--text-primary-color);
+       padding: 16px;
+       @apply --layout-vertical;
+       @apply --layout-around-justfied;
+     }
 
      #sub-heading {
-       @apply(--layout-horizontal);
-       @apply(--layout-around-justfied);
-       @apply(--layout-center);
+       @apply --layout-horizontal;
+       @apply --layout-around-justfied;
+       @apply --layout-center;
        /* padding-bottom: 3em; */
      }
 
      @media screen and (min-width: 728px) {
        #sub-heading {
-         @apply(--layout-vertical);
-         @apply(--layout-around-aligned);
+         @apply --layout-vertical;
+         @apply --layout-around-aligned;
          height: 20em;
        }
 
        iron-icon {
-         @apply(--layout-flex-2);
+         @apply --layout-flex-2;
        }
      }
 
      .date-heading {
-       @apply(--layout-flex-2);
-       @apply(--layout-vertical);
-       @apply(--layout-around-justfied);
+       @apply --layout-flex-2;
+       @apply --layout-vertical;
+       @apply --layout-around-justfied;
      }
 
      iron-icon {
        --iron-icon: {
-         @apply(--layout-flex);
+         @apply --layout-flex;
          stroke-width: 10;
        }
      }
 
      .date, .day {
-        cursor: pointer;
-      }
+       cursor: pointer;
+     }
 
-      .date {
-        @apply(--paper-font-headline);
-        font-weight: bold;
-        margin-top: 2px;
-        @apply(--paper-daterange-picker-heading-date);
-      }
+     .date {
+       @apply --paper-font-headline;
+       font-weight: bold;
+       margin-top: 2px;
+       @apply --paper-daterange-picker-heading-date;
+     }
 
-      div.date {
-        letter-spacing: 0.025em;
-      }
+     div.date {
+       letter-spacing: 0.025em;
+     }
 
-      .date span {
-        white-space: nowrap;
-      }
+     .date span {
+       white-space: nowrap;
+     }
 
-      .day {
-        @apply(--paper-font-body2);
-        font-size: 16px;
-        @apply(--paper-daterange-picker-heading-date);
-      }
+     .day {
+       @apply --paper-font-body2;
+       font-size: 16px;
+       @apply --paper-daterange-picker-heading-date;
+     }
 
-      /** Calendar picker ********/
+     /** Calendar picker ********/
 
-      #pages {
-        @apply(--layout-flex-2);
-        width: auto;
-        background: var(--default-background-color);
-      }
+     #pages {
+       @apply --layout-flex-2;
+       width: auto;
+       background: var(--default-background-color);
+     }
 
      #calendar {
        --paper-range-calendar: {
-         @apply(--paper-daterange-picker-calendar);
+         @apply --paper-daterange-picker-calendar;
        }
      }
     </style>
-    <iron-media-query query="{{_getMediaQuery(forceNarrow, responsiveWidth)}}" query-matches="{{_queryMatches}}"></iron-media-query>
+    <iron-media-query query="{{_getMediaQuery(forceNarrow, responsiveWidth)}}" query-matches="{{_smallScreen}}"></iron-media-query>
     <iron-a11y-keys target="[[prevBtn]]"
                     keys="enter space"
                     on-keys-pressed="_tapPrevDate"></iron-a11y-keys>
@@ -214,215 +175,233 @@ styling:
         </div>
       </div>
 
-      <neon-animated-pages id="pages" selected="{{_selectedPage}}" attr-for-selected="id"
-                           entry-animation="fade-in-animation" exit-animation="fade-out-animation"
-                           on-iron-select="_pageSelected">
-        <neon-animatable id="chooseDate">
-          <paper-range-calendar id="calendar" locale="{{locale}}"
-                          start-date="{{startDate}}" end-date="{{endDate}}"
-                          min-date="{{minDate}}" max-date="{{maxDate}}">
-          </paper-range-calendar>
-        </neon-animatable>
-      </neon-animated-pages>
+      <paper-range-calendar id="calendar" locale="{{locale}}"
+                            start-date="{{startDate}}" end-date="{{endDate}}"
+                            min-date="{{minDate}}" max-date="{{maxDate}}">
+      </paper-range-calendar>
     </div>
   </template>
   <script>
+   /**
+    * Material Design [Pickers](http://www.google.com/design/spec/components/pickers.html)
+    *
+    * Provides a responsive date picker based on the material design spec.
+    *
+    * ## Examples:
+    *
+    * Default picker:
+    *
+    *     <paper-daterange-picker></paper-daterange-picker>
+    *
+    * Setting the initial date to April 20, 2015:
+    *
+    *     <paper-daterange-picker date="April 20, 2015"></paper-daterange-picker>
+    *
+    * You may also specify a minimum and/or maximum date allowed in this picker using
+    * the same date notation:
+    *
+    *     <paper-daterange-picker min-date="April 1, 2015" max-date="June 30, 2015"></paper-daterange-picker>
+    *
+    * If you include this element as part of `paper-dialog`, use the class
+    * `"paper-daterange-picker-dialog"` on the dialog element in order to give it proper
+    * styling:
+    *
+    *     <paper-dialog id="dialog" class="paper-daterange-picker-dialog" modal
+    *       on-iron-overlay-closed="dismissDialog">
+    *       <paper-daterange-picker id="picker" date="[[date]]"></paper-daterange-picker>
+    *       <div class="buttons">
+    *         <paper-button dialog-dismiss>Cancel</paper-button>
+    *         <paper-button dialog-confirm>OK</paper-button>
+    *       </div>
+    *     </paper-dialog>
+    *
+    * @element paper-daterange-picker
+    * @blurb Provides a responsive date picker based on the material design spec.
+    * @homepage http://bendavis78.github.io/paper-daterange-picker/
+    * @demo demo/index.html
+    */
+   class PaperDaterangePicker extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior, Polymer.GestureEventListeners], Polymer.Element) {
+     static get is() { return 'paper-daterange-picker'; }
 
-    Polymer({
-      is: 'paper-daterange-picker',
-      properties: {
-        /**
-         * The selected date (YYYY-MM-DD)
-         */
-        startDate: {
-          type: Date,
-          notify: true,
-          reflectToAttribute: true
-        },
+     static get properties() {
+       return {
+         /**
+          * The selected date (YYYY-MM-DD)
+          */
+         startDate: {
+           type: Date,
+           notify: true,
+           reflectToAttribute: true
+         },
 
-        endDate: {
-          type: Date,
-          notify: true,
-          reflectToAttribute: true
-        },
+         endDate: {
+           type: Date,
+           notify: true,
+           reflectToAttribute: true
+         },
 
 
-        /**
-         * Maximum screen width at which the picker uses a vertical layout
-         */
-        responsiveWidth: {
-          type: String,
-          value: '560px'
-        },
+         /**
+          * Maximum screen width at which the picker uses a vertical layout
+          */
+         responsiveWidth: {
+           type: String,
+           value: '560px'
+         },
 
-        /**
-         * The current locale
-         */
-        locale: {
-          type: String,
-          value: 'en'
-        },
+         /**
+          * The current locale
+          */
+         locale: {
+           type: String,
+           value: 'en'
+         },
 
-        /**
-         * The format of the date displayed in the heading.
-         * See docuemntation for Moment.js for more info.
-         */
-        headingFormat: {
-          type: String,
-          value: 'MMM D'
-        },
+         /**
+          * The format of the date displayed in the heading.
+          * See docuemntation for Moment.js for more info.
+          */
+         headingFormat: {
+           type: String,
+           value: 'MMM D'
+         },
 
-        /**
-         * The minimum allowed date
-         */
-        minDate: {
-          type: Date,
-          value: function() {
-            return moment().subtract(1, 'days').toDate();
-          }
-        },
+         /**
+          * The minimum allowed date
+          */
+         minDate: {
+           type: Date,
+           value: () => {
+             return moment().subtract(1, 'days').toDate();
+           }
+         },
 
-        /**
-         * The maximum allowed date
-         */
-        maxDate: {
-          type: Date,
-          value: function() {
-            return moment().add(9, 'months').toDate();
-          }
-        },
+         /**
+          * The maximum allowed date
+          */
+         maxDate: {
+           type: Date,
+           value: () => {
+             return moment().add(9, 'months').toDate();
+           }
+         },
 
-        /**
-         * Force narrow layout
-         */
-        forceNarrow: {
-          type: Boolean,
-          value: false
-        },
+         /**
+          * Force narrow layout
+          */
+         forceNarrow: {
+           type: Boolean,
+           value: false
+         },
 
-        narrow: {
-          type: Boolean,
-          reflectToAttribute: true,
-          notify: true,
-          computed: '_computeNarrow(forceNarrow, _queryMatches)'
-        },
-        isTouch: {
-          type: Boolean,
-          value: false,
-          readOnly: true,
-          reflectToAttribute: true
-        },
-        _queryMatches: {
-          type: Boolean,
-          value: false
-        },
-        headingBreak: {
-          type: String,
-          value: '[,]'
-        },
+         narrow: {
+           type: Boolean,
+           reflectToAttribute: true,
+           notify: true,
+           computed: '_computeNarrow(forceNarrow, _smallScreen)'
+         },
+         isTouch: {
+           type: Boolean,
+           value: false,
+           readOnly: true,
+           reflectToAttribute: true
+         },
+         _smallScreen: {
+           type: Boolean,
+           value: false
+         },
+         headingBreak: {
+           type: String,
+           value: '[,]'
+         },
 
-        prevBtn: {
-          type: Object,
-          value: function() {
-            return this.$.prevBtn;
-          }
-        },
+         prevBtn: Object,
+         nextBtn: Object
+       };
+     }
 
-        nextBtn: {
-          type: Object,
-          value: function() {
-            return this.$.nextBtn;
-          }
-        }
-      },
+     static get observers() {
+       return [
+         '_fireUpdate(startDate, endDate)'
+       ];
+     }
 
-      behaviors: [
-        Polymer.IronResizableBehavior
-      ],
+     ready() {
+       super.ready();
+       this.addEventListener('iron-resize', this._resizeHandler);
 
-      listeners: {
-        'iron-resize': '_resizeHandler'
-      },
+       // set the keys for a11y
+       let prevBtn = this.$.prevBtn,
+           nextBtn = this.$.nextBtn;
+       this.set('prevBtn', prevBtn);
+       this.set('nextBtn', nextBtn);
 
-      observers: [
-        '_fireUpdate(startDate, endDate)'
-      ],
+       this.today = this.$.calendar.today;
+       this.isTouch = 'ontouchstart' in window;
+     }
 
-      ready: function() {
-        this.today = this.$.calendar.today;
-        this.isTouch = 'ontouchstart' in window;
-        this._selectPage('chooseDate');
-      },
+     dateFormat() {
+       return this.$.calendar.dateFormat.apply(this.$.calendar, arguments);
+     }
 
-      dateFormat: function() {
-        return this.$.calendar.dateFormat.apply(this.$.calendar, arguments);
-      },
+     _tapHeadingDate(e) {
+       let date = e.target.dataDate;
+       // tapping the date header while already viewing months brings you back
+       // to the selected month
+       this.$.calendar.currentMonth = date.getMonth() + 1;
+     }
 
-      _tapHeadingDate: function(e) {
-        var date = e.target.dataDate;
-        // tapping the date header while already viewing months brings you back
-        // to the selected month
-        this.$.calendar.currentMonth = date.getMonth() + 1;
-      },
+     _tapPrevDate() {
+       this.$.calendar.currentMonth = this.startDate.getMonth() + 1;
+     }
 
-      _tapPrevDate: function() {
-        this.$.calendar.currentMonth = this.startDate.getMonth() + 1;
-      },
+     _tapNextDate() {
+       this.$.calendar.currentMonth = this.endDate.getMonth() + 1;
+     }
 
-      _tapNextDate: function() {
-        this.$.calendar.currentMonth = this.endDate.getMonth() + 1;
-      },
+     _getMediaQuery(forceNarrow, responsiveWidth) {
+       return '(max-width: ' + (forceNarrow ? '' : responsiveWidth) + ')';
+     }
 
-      _selectPage: function(page) {
-        this.$.pages.selected = page;
-      },
+     _splitHeadingDate(date, format, locale) {
+       let re = new RegExp(this.headingBreak, 'g');
+       let text = this.dateFormat(date, format, locale);
+       let seps = text.match(re);
+       let value;
+       if (!seps) {
+         value = [text];
+       } else {
+         value = text.split(re).map((s, i) => {
+           return s + (seps[i] || '');
+         });
+       }
+       return value;
+     }
 
-      _getMediaQuery: function(forceNarrow, responsiveWidth) {
-        return '(max-width: ' + (forceNarrow ? '' : responsiveWidth) + ')';
-      },
+     _computeNarrow(smallScreen, forceNarrow) {
+       return smallScreen || forceNarrow;
+     }
 
-      _splitHeadingDate: function(date, format, locale) {
-        var re = new RegExp(this.headingBreak, 'g');
-        var text = this.dateFormat(date, format, locale);
-        var seps = text.match(re);
-        var value;
-        if (!seps) {
-          value = [text];
-        } else {
-          value = text.split(re).map(function(s, i) {
-            return s + (seps[i] || '');
-          });
-        }
-        return value;
-      },
+     _resizeHandler() {
+       if (this._resizing) {
+         return;
+       }
+       this.set('_resizing', true);
+       this.$.calendar.notifyResize();
+       this.set('_resizing', false)
 
-      _computeNarrow: function(queryMatches, forceNarrow) {
-        return queryMatches || forceNarrow;
-      },
+       this.updateStyles();
+     }
 
-      _pageSelected: function() {
-        this._resizeHandler();
-      },
+     // event to notify parent element of date changes
+     _fireUpdate() {
+       // use a small time delay for element attrs to propagate changes
+       setTimeout(() => {
+         this.dispatchEvent(new CustomEvent('update'));
+       }, 100);
+     }
+   }
 
-      _resizeHandler: function() {
-        if (this._resizing) {
-          return;
-        }
-        this._resizing = true;
-        this.$.calendar.notifyResize();
-        this._resizing = false;
-
-        this.updateStyles();
-      },
-
-      // event to notify parent element of date changes
-      _fireUpdate: function() {
-        // use a small time delay for element attrs to propagate changes
-        setTimeout(function() {
-          this.fire('update');
-        }.bind(this), 100);
-      }
-
-    });
+   customElements.define(PaperDaterangePicker.is, PaperDaterangePicker);
   </script>
 </dom-module>

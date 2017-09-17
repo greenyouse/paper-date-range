@@ -1,0 +1,100 @@
+<link rel="import" href="../../polymer/polymer-element.html">
+<link rel="import" href="../../polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../../moment-element/moment-with-locales-import.html">
+<link rel="import" href="../../paper-dialog/paper-dialog.html">
+<link rel="import" href="../../paper-button/paper-button.html">
+<link rel="import" href="../../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
+<link rel="import" href="../paper-daterange-picker.html">
+
+<dom-module id="demo-page">
+  <template>
+    <custom-style>
+      <style include="paper-daterange-picker-dialog-style">
+       section {
+         margin: 24px;
+       }
+      </style>
+    </custom-style>
+
+    <section>
+      <strong>Here are the dates you picked:</strong><br>
+      <p>start - {{dateFormat(startDate, 'LL')}}</p><br>
+      <p>end - {{dateFormat(endDate, 'LL')}}</p>
+      <paper-button on-tap="showDialog" raised>Change Date</paper-button>
+      <paper-dialog id="dialog" class="paper-daterange-picker-dialog" modal >
+        <paper-daterange-picker id="picker"
+                                on-track="track"
+                                start-date="{{startDate}}"
+                                end-date="{{endDate}}"
+                                min-date="[[minDate]]"
+                                max-date="[[maxDate]]">
+        </paper-daterange-picker>
+        <div class="buttons">
+          <paper-button dialog-dismiss>Cancel</paper-button>
+          <paper-button dialog-confirm>OK</paper-button>
+        </div>
+      </paper-dialog>
+    </section>
+  </template>
+
+  <script>
+   /**
+    * Just a useless demo component.
+    */
+   class DemoPage extends Polymer.mixinBehaviors([Polymer.GestureEventListeners, Polymer.IronA11yKeysBehavior], Polymer.Element) {
+     static get is() { return 'demo-page'; }
+
+     static get properties() {
+       return {
+         startDate: {
+           type: Date,
+           value: function() {
+             return new Date(2017, 3, 10);
+           }
+         },
+
+         endDate: {
+           type: Date,
+           value: function() {
+             return new Date(2017, 3, 17);
+           }
+         },
+
+         minDate: {
+           type: Date,
+           value: function() {
+             return new Date(2017, 3, 6);
+           }
+         },
+
+         maxDate: {
+           type: Date,
+           value: function() {
+             return new Date(2018, 3, 6);
+           }
+         }
+       }
+     }
+
+     get keyBindings() {
+       return {
+         'esc': 'showDialog'
+       }
+     }
+
+     dateFormat(date, format) {
+       return moment(date).format(format);
+     }
+
+     showDialog() {
+       this.$.dialog.toggle();
+     }
+
+     track() {
+       this.dispatchEvent(new CustomEvent('iron-resize'));
+     };
+   };
+
+   customElements.define(DemoPage.is, DemoPage);
+  </script>
+</dom-module>
