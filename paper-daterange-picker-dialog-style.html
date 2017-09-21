@@ -1,41 +1,29 @@
-<custom-style>
-  <style >
-   /* mixin definitions */
-   html > * {
-     --paper-daterange-picker-dialog: {
-       margin: 0;
-       max-height: 520px !important;
-       overflow: hidden;
-     };
-     --paper-daterange-picker-dialog-picker: {
-       margin-top: 0 !important;
-       padding: 0;
-     };
-     --paper-daterange-picker-dialog-calendar: {
-       padding-bottom: 0;
-     };
-     --paper-daterange-picker-dialog-heading: {
-       margin-bottom: -62px;
-     };
-   }
-  </style>
-</custom-style>
+<link rel="import" href="../polymer/polymer.html">
 
 <dom-module id="paper-daterange-picker-dialog-style">
   <template>
     <style>
      /* Application of mixins to local .paper-daterange-picker-dialog elements */
      .paper-daterange-picker-dialog {
+       margin: 0;
+       max-height: 520px !important;
+       overflow: hidden;
        @apply --paper-daterange-picker-dialog;
      }
      .paper-daterange-picker-dialog > paper-daterange-picker {
+       margin-top: 0 !important;
+       padding: 0;
+
        --paper-calendar: {
+         padding-bottom: 0;
          @apply --paper-daterange-picker-dialog-calendar;
        };
        @apply --paper-daterange-picker-dialog-picker;
      }
      .paper-daterange-picker-dialog > paper-daterange-picker:not([narrow]) {
        --paper-daterange-picker-heading: {
+
+         margin-bottom: -62px;
          @apply --paper-daterange-picker-dialog-heading;
        };
      }
