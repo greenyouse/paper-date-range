@@ -930,32 +930,36 @@
 
        /* TODO: bind keyboard listeners inside dom-repeat to make these methods cleaner */
        previousDay(e) {
-         let el = e.detail.keyboardEvent.path[0]
-         let date = el.getAttribute('date');
+         let srcEvent = e.detail.keyboardEvent;
+         let srcEl = Polymer.dom(srcEvent).rootTarget;
+         let date = srcEl.getAttribute('date');
          let start= moment(date),
              newDate = moment(date).subtract(1, 'day');
          this.changeDate(start, newDate);
        }
 
        nextDay(e) {
-         let el = e.detail.keyboardEvent.path[0]
-         let date = el.getAttribute('date');
+         let srcEvent = e.detail.keyboardEvent;
+         let srcEl = Polymer.dom(srcEvent).rootTarget;
+         let date = srcEl.getAttribute('date');
          let start= moment(date),
              newDate = moment(date).add(1, 'day');
          this.changeDate(start, newDate);
        }
 
        previousWeek(e) {
-         let el = e.detail.keyboardEvent.path[0]
-         let date = el.getAttribute('date');
+         let srcEvent = e.detail.keyboardEvent;
+         let srcEl = Polymer.dom(srcEvent).rootTarget;
+         let date = srcEl.getAttribute('date');
          let start= moment(date),
              newDate = moment(date).subtract(1, 'week');
          this.changeDate(start, newDate);
        }
 
        nextWeek(e) {
-         let el = e.detail.keyboardEvent.path[0]
-         let date = el.getAttribute('date');
+         let srcEvent = e.detail.keyboardEvent;
+         let srcEl = Polymer.dom(srcEvent).rootTarget;
+         let date = srcEl.getAttribute('date');
          let start= moment(date),
              newDate = moment(date).add(1, 'week');
          this.changeDate(start, newDate);
