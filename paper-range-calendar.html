@@ -236,12 +236,12 @@
     </style>
 
     <p id="calendar-desc" class="hidden">Calendar widget for date selection, use arrow keys to scroll the days and Page Up and Page Down to scroll the months.</p>
-    <iron-a11y-keys target="[[nextBtn]]"
-                    keys="enter space"
-                    on-keys-pressed="_swipeNextMonth"></iron-a11y-keys>
-    <iron-a11y-keys target="[[prevBtn]]"
-                    keys="enter space"
-                    on-keys-pressed="_swipePrevMonth"></iron-a11y-keys>
+    <!-- <iron-a11y-keys target="[[nextBtn]]"
+         keys="enter space"
+         on-keys-pressed="_swipeNextMonth"></iron-a11y-keys>
+         <iron-a11y-keys target="[[prevBtn]]"
+         keys="enter space"
+         on-keys-pressed="_swipePrevMonth"></iron-a11y-keys> -->
 
     <div id="monthNav" class="month-nav">
       <div class="flex col self-stretch">
@@ -439,7 +439,26 @@
            'up': 'previousWeek',
            'down': 'nextWeek',
            'pageup': '_swipePrevMonth',
-           'pagedown': '_swipeNextMonth'
+           'pagedown': '_swipeNextMonth',
+
+           // hack, see below
+           'space': 'log',
+           'enter': 'log'
+         }
+       }
+
+       /* HACK: workaround for Firefox 55+ bug, see:
+          https://github.com/PolymerElements/iron-a11y-keys/issues/41
+        */
+       log(e) {
+         let srcEvent = e.detail.keyboardEvent;
+         let srcEl = Polymer.dom(srcEvent).rootTarget;
+
+         e.preventDefault();
+         if (srcEl == this.$.nextBtn) {
+           this._swipeNextMonth();
+         } else if (srcEl == this.$.prevBtn) {
+           this._swipePrevMonth();
          }
        }
 
@@ -670,16 +689,6 @@
              }
              this._gesture = null;
          }
-       }
-
-       _swipePrevMonth() {
-         let month = this.currentMonth - 1;
-         if (month < 1) {
-           month += 12;
-           let year = this.currentYear - 1;
-           this.set('currentYear', year);
-         }
-         this.set('currentMonth', month);
        }
 
        _getMonthIdx(pos) {
