@@ -928,8 +928,9 @@
          }
        }
 
-       /* TODO: bind keyboard listeners inside dom-repeat to make these methods cleaner */
+       /* TODO: helper fn for remove duplication? */
        previousDay(e) {
+         e.preventDefault();
          let srcEvent = e.detail.keyboardEvent;
          let srcEl = Polymer.dom(srcEvent).rootTarget;
          let date = srcEl.getAttribute('date');
@@ -939,6 +940,7 @@
        }
 
        nextDay(e) {
+         e.preventDefault();
          let srcEvent = e.detail.keyboardEvent;
          let srcEl = Polymer.dom(srcEvent).rootTarget;
          let date = srcEl.getAttribute('date');
@@ -948,6 +950,7 @@
        }
 
        previousWeek(e) {
+         e.preventDefault();
          let srcEvent = e.detail.keyboardEvent;
          let srcEl = Polymer.dom(srcEvent).rootTarget;
          let date = srcEl.getAttribute('date');
@@ -957,6 +960,7 @@
        }
 
        nextWeek(e) {
+         e.preventDefault();
          let srcEvent = e.detail.keyboardEvent;
          let srcEl = Polymer.dom(srcEvent).rootTarget;
          let date = srcEl.getAttribute('date');
