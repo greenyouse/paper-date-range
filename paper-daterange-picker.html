@@ -143,10 +143,10 @@
      }
     </style>
     <iron-media-query query="{{_getMediaQuery(forceNarrow, responsiveWidth)}}" query-matches="{{_smallScreen}}"></iron-media-query>
-    <iron-a11y-keys target="[[prevBtn]]"
+    <iron-a11y-keys target="[[startMonthBtn]]"
                     keys="enter space"
                     on-keys-pressed="_tapPrevDate"></iron-a11y-keys>
-    <iron-a11y-keys target="[[nextBtn]]"
+    <iron-a11y-keys target="[[endMonthBtn]]"
                     keys="enter space"
                     on-keys-pressed="_tapNextDate"></iron-a11y-keys>
     <div id="datePicker">
@@ -156,7 +156,7 @@
         <div id="sub-heading">
           <div class="date-heading">
             <div class="day" data-date="[[startDate]]" on-tap="_tapHeadingDate">{{dateFormat(startDate, 'dddd', locale)}}</div>
-            <div id="prevBtn" class="date" on-tap="_tapHeadingDate" tabindex="0">
+            <div id="startMonthBtn" class="date" on-tap="_tapHeadingDate" tabindex="0">
               <template is="dom-repeat" items="{{_splitHeadingDate(startDate, headingFormat, locale)}}">
                 <!-- HACK: added data-date here for passing to fn, see other spots too -->
                 <span data-date="[[startDate]]">{{item}}</span>
@@ -166,7 +166,7 @@
           <iron-icon icon="date-picker:arrow-forward"></iron-icon>
           <div class="date-heading">
             <div class="day" data-date="[[endDate]]" on-tap="_tapHeadingDate">{{dateFormat(endDate, 'dddd', locale)}}</div>
-            <div id="nextBtn" class="date" on-tap="_tapHeadingDate" tabindex="0">
+            <div id="endMonthBtn" class="date" on-tap="_tapHeadingDate" tabindex="0">
               <template is="dom-repeat" items="{{_splitHeadingDate(endDate, headingFormat, locale)}}">
                 <span data-date="[[endDate]]">{{item}}</span>
               </template>
@@ -315,8 +315,8 @@
            value: '[,]'
          },
 
-         prevBtn: Object,
-         nextBtn: Object
+         startMonthBtn: Object,
+         endMonthBtn: Object
        };
      }
 
@@ -331,10 +331,10 @@
        this.addEventListener('iron-resize', this._resizeHandler);
 
        // set the keys for a11y
-       let prevBtn = this.$.prevBtn,
-           nextBtn = this.$.nextBtn;
-       this.set('prevBtn', prevBtn);
-       this.set('nextBtn', nextBtn);
+       let startMonthBtn = this.$.startMonthBtn,
+           endMonthBtn = this.$.endMonthBtn;
+       this.set('startMonthBtn', startMonthBtn);
+       this.set('endMonthBtn', endMonthBtn);
 
        this.today = this.$.calendar.today;
        this.isTouch = 'ontouchstart' in window;
