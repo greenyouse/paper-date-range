@@ -442,15 +442,15 @@
            'pagedown': '_swipeNextMonth',
 
            // hack, see below
-           'space': 'log',
-           'enter': 'log'
+           'space': '_cancelEvent',
+           'enter': '_cancelEvent'
          }
        }
 
        /* HACK: workaround for Firefox 55+ bug, see:
           https://github.com/PolymerElements/iron-a11y-keys/issues/41
         */
-       log(e) {
+       _cancelEvent(e) {
          let srcEvent = e.detail.keyboardEvent;
          let srcEl = Polymer.dom(srcEvent).rootTarget;
 
