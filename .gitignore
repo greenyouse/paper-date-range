@@ -6,3 +6,5 @@ node_modules
 gulpfile.js
 /old-paper-calendar.html
 /old-paper-date-picker.html
+/analysis.json
+/notes.org

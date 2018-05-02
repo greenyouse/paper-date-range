@@ -443,7 +443,27 @@
 
            // hack, see below
            'space': '_cancelEvent',
-           'enter': '_cancelEvent'
+           'enter': '_cancelEvent',
+
+           // NOTE: debugging tab keyboard event
+           /* 'tab': 'log' */
+         }
+       }
+
+       log(e) {
+         // CSS id from the source element that emitted the event
+         var event = e.detail.keyboardEvent;
+         console.log(event);
+         var srcId =  event.path[0].id;
+         if (srcId === 'start') {
+           var endMonth = this.endDate.getMonth() + 1;
+           this.currentMonth = endMonth;
+           this._positionSlider();
+           // wait for slider animation to finish
+           setTimeout(() => {
+             this.$$('#end').focus();
+           }, 100);
+           e.preventDefault();
          }
        }
 
@@ -561,11 +581,38 @@
        }
 
        _focusIndex(e) {
+         console.log();
+         var srcId = Polymer.dom(e).rootTarget.id;
+         var month = e.model.item.date.getMonth() + 1;
+         this.currentMonth = month;
+
+         // NOTE: try to move calendar inside this onFocus handler
+         // do something like what's below, test with tabbing through
+         // start and end dates in different months
+         /* this._positionSlider(); */
+         /* this.$$('#' + srcId).focus(); */
+
          // every keyboard event calls _focusIndex
          // so this calls preventDefault on all keyboard events
-         e.preventDefault();
-         let month = e.model.item.date.getMonth() + 1;
+         /* var srcId = Polymer.dom(e).rootTarget.id;
+          * let month = e.model.item.date.getMonth() + 1;
+          * this.currentMonth = month;
 
+          * if (srcId === 'end') {
+          *   // wait for slider animation to finish
+          *   setTimeout(() => {
+          *     this._positionSlider();
+          *     this.$$('#end').focus();
+          *   }, 100);
+          * } else if (srcId === 'start') {
+          *   // wait for slider animation to finish
+          *   setTimeout(() => {
+          *     this._positionSlider();
+          *     this.$$('#start').focus();
+          *   }, 100);
+          * } */
+
+         e.preventDefault();
          setTimeout(() => {
            this.set('currentMonth', month);
          }, 10);
@@ -806,13 +853,6 @@
            this.set('currentYear', year);
          }
          this.set('currentMonth', month);
-       }
-
-       _getMonthIdx(pos) {
-         // returns the index for the visible month according to the given position
-         let width = this._containerWidth;
-         let i = Math.floor((-pos + (width/2)) / width);
-         return i < 0 ? 0 : i;
        }
 
        _getTabIndex(date, startDate, endDate) {
