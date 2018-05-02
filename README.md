@@ -8,7 +8,7 @@ Material Design but it's pretty close.
 
 ## Warning
 
-Still a work in progress, not released yet. If you want to help, feel
+Still a work in progress so not released yet. If you want to help feel
 free to open an issue or submit a PR for an existing one. Thanks!
 
 ## Credits
@@ -22,6 +22,6 @@ If you find this component useful, please show your support by donating to
 
 [![ideaSpark campaign button][donate]](https://donorbox.org/bold-idea-make-ideaspark-possible-for-dallas-area-students)
 
-[wide]: https://s9.postimg.cc/742bgobtb/desktop-calendar.jpg
-[narrow]: https://s9.postimg.cc/h1dc9t40f/mobile-calendar.jpg
+[wide]: https://s9.postimg.cc/xropz5pkv/desktop-calendar.jpg
+[narrow]: https://s9.postimg.cc/hgom2uksv/mobile-calendar.jpg
 [donate]: http://www.boldidea.org/donate-badge-md-1.png
