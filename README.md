@@ -4,6 +4,12 @@ paper-date-range
 Calendar for selecting a range of dates. It varies slightly from normal
 Material Design but it's pretty close.
 
+This is designed to be a fully accessible calendar that gets as close to 
+[WCAG 2 .0 AAA conformance](https://www.w3.org/TR/WCAG20/#conformance) as
+possible. This means things like keyboard navigation, high color
+contrast, WAI-ARIA, and others should be used. If you have suggestions
+for accessibility improvements, please file an issue. 
+
 ![wide picker screenshot][wide] ![narrow picker screenshot][narrow]
 
 ## Warning
